@@ -1,0 +1,34 @@
+Actor_09: (re)started download
+Actor_10: (re)started download
+Actor_11: (re)started download
+Actor_12: (re)started download
+Actor_13: (re)started download
+Actor_14: (re)started download
+Actor_15: (re)started download
+Actor_16: (re)started download
+Actor_17: (re)started download
+Actor_18: (re)started download
+Actor_19: (re)started download
+Actor_20: (re)started download
+Actor_21: (re)started download
+Actor_22: (re)started download
+Actor_23: (re)started download
+Actor_24: (re)started download
+Actor_24: (re)started download
+Actor_18: (re)started download
+Actor_13: 60/60 AV clips extracted, download stopped
+Actor_09: 60/60 AV clips extracted, download stopped
+Actor_11: 60/60 AV clips extracted, download stopped
+Actor_22: 60/60 AV clips extracted, download stopped
+Actor_24: 60/60 AV clips extracted, download stopped
+Actor_14: 60/60 AV clips extracted, download stopped
+Actor_15: 60/60 AV clips extracted, download stopped
+Actor_17: 60/60 AV clips extracted, download stopped
+Actor_18: 60/60 AV clips extracted, download stopped
+Actor_19: 60/60 AV clips extracted, download stopped
+Actor_20: 60/60 AV clips extracted, download stopped
+Actor_10: 60/60 AV clips extracted, download stopped
+Actor_16: 60/60 AV clips extracted, download stopped
+Actor_21: 60/60 AV clips extracted, download stopped
+Actor_23: 60/60 AV clips extracted, download stopped
+Actor_12: 60/60 AV clips extracted, download stopped

@@ -1,0 +1,12 @@
+{
+  "raw": {
+    "n": 7,
+    "correct7": 4,
+    "correct6": 4
+  },
+  "cleaned": {
+    "n": 7,
+    "correct7": 5,
+    "correct6": 5
+  }
+}

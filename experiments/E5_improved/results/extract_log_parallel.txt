@@ -1,0 +1,84 @@
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791739887.836984  782081 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791739887.838230  782337 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-24 frames=111 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-24 frames=123 face=1.00 elapsed=33s
+31/60 01-01-05-01-02-01-24 frames=110 face=1.00 elapsed=60s
+41/60 01-01-06-02-01-01-24 frames=115 face=1.00 elapsed=91s
+51/60 01-01-07-02-02-01-24 frames=127 face=1.00 elapsed=120s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740035.830144  788143 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740035.831266  788368 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-23 frames=114 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-23 frames=108 face=1.00 elapsed=32s
+31/60 01-01-05-01-02-01-23 frames=98 face=1.00 elapsed=59s
+41/60 01-01-06-02-01-01-23 frames=107 face=1.00 elapsed=83s
+51/60 01-01-07-02-02-01-23 frames=112 face=1.00 elapsed=112s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740173.705530  800296 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740173.706688  800690 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-22 frames=109 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-22 frames=108 face=1.00 elapsed=33s
+31/60 01-01-05-01-02-01-22 frames=116 face=1.00 elapsed=60s
+41/60 01-01-06-02-01-01-22 frames=107 face=1.00 elapsed=89s
+51/60 01-01-07-02-02-01-22 frames=126 face=1.00 elapsed=117s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740318.180047  811442 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740318.184773  811811 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-21 frames=115 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-21 frames=129 face=1.00 elapsed=34s
+31/60 01-01-05-01-02-01-21 frames=122 face=1.00 elapsed=64s
+41/60 01-01-06-02-01-01-21 frames=119 face=1.00 elapsed=94s
+51/60 01-01-07-02-02-01-21 frames=125 face=1.00 elapsed=123s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740471.649910  823378 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740471.651926  823620 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-20 frames=104 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-20 frames=108 face=1.00 elapsed=34s
+31/60 01-01-05-01-02-01-20 frames=110 face=1.00 elapsed=59s
+41/60 01-01-06-02-01-01-20 frames=127 face=1.00 elapsed=86s
+51/60 01-01-07-02-02-01-20 frames=142 face=1.00 elapsed=115s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740611.543660  829920 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740611.545109  830092 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-19 frames=100 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-19 frames=102 face=1.00 elapsed=38s
+31/60 01-01-05-01-02-01-19 frames=98 face=1.00 elapsed=62s
+41/60 01-01-06-02-01-01-19 frames=114 face=1.00 elapsed=88s
+51/60 01-01-07-02-02-01-19 frames=146 face=1.00 elapsed=118s
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791740756.570722  835021 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791740756.571977  835170 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/60 01-01-01-01-01-01-18 frames=104 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-18 frames=107 face=1.00 elapsed=31s
+31/60 01-01-05-01-02-01-18 frames=107 face=1.00 elapsed=57s
+41/60 01-01-06-02-01-01-18 frames=112 face=1.00 elapsed=81s
+51/60 01-01-07-02-02-01-18 frames=139 face=1.00 elapsed=110s

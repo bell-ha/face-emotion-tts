@@ -1,0 +1,12 @@
+{
+  "machine": "arm64",
+  "platform": "macOS-15.7.7-arm64-arm-64bit",
+  "python": "3.11.14",
+  "tensorflow": "2.15.1",
+  "tf_devices": [
+    "CPU"
+  ],
+  "warmup": 50,
+  "iterations": 500,
+  "mediapipe": "0.10.14"
+}

@@ -1,0 +1,139 @@
+{
+  "C_PRESETS": {
+    "happy": {
+      "rate": "+0%",
+      "pitch": "+65Hz",
+      "volume": "+0%"
+    },
+    "sad": {
+      "rate": "-40%",
+      "pitch": "-45Hz",
+      "volume": "+0%"
+    },
+    "angry": {
+      "rate": "+30%",
+      "pitch": "-5Hz",
+      "volume": "+20%"
+    },
+    "surprise": {
+      "rate": "+30%",
+      "pitch": "+90Hz",
+      "volume": "+0%"
+    },
+    "fear": {
+      "rate": "+30%",
+      "pitch": "-35Hz",
+      "volume": "-30%"
+    },
+    "neutral": {
+      "rate": "+0%",
+      "pitch": "+0Hz",
+      "volume": "+0%"
+    }
+  },
+  "D_PRESETS": {
+    "happy": {
+      "breath_snr": null,
+      "f0_range": 1.0,
+      "f0_shift": 0.0,
+      "contour": [
+        "none",
+        0.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 1.0,
+      "tilt_db": 3.0,
+      "gain_db": 2.0
+    },
+    "sad": {
+      "breath_snr": null,
+      "f0_range": 0.4,
+      "f0_shift": -2.0,
+      "contour": [
+        "decline",
+        0.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 1.0,
+      "tilt_db": 0.0,
+      "gain_db": -4.0
+    },
+    "angry": {
+      "breath_snr": null,
+      "f0_range": 2.0,
+      "f0_shift": -1.0,
+      "contour": [
+        "none",
+        0.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 1.1,
+      "tilt_db": 3.0,
+      "gain_db": 4.0
+    },
+    "surprise": {
+      "breath_snr": null,
+      "f0_range": 1.4,
+      "f0_shift": 2.0,
+      "contour": [
+        "onset_rise",
+        6.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 1.0,
+      "tilt_db": 0.0,
+      "gain_db": 2.0
+    },
+    "fear": {
+      "breath_snr": 20.0,
+      "f0_range": 0.6,
+      "f0_shift": 0.0,
+      "contour": [
+        "none",
+        0.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 1.0,
+      "tilt_db": -3.0,
+      "gain_db": -4.0
+    },
+    "neutral": {
+      "breath_snr": null,
+      "f0_range": 0.8,
+      "f0_shift": -1.0,
+      "contour": [
+        "none",
+        0.0
+      ],
+      "tremor": [
+        6.0,
+        0.0
+      ],
+      "tempo": 0.95,
+      "tilt_db": -3.0,
+      "gain_db": 0.0
+    }
+  },
+  "dev_sentences": [
+    "S03",
+    "S04",
+    "S05",
+    "S06"
+  ],
+  "objective": "dev correct(6-class restricted argmax) + 0.01*mean clipped log10 margin"
+}

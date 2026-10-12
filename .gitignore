@@ -1,0 +1,28 @@
+# 비밀 정보
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# 생성된 오디오
+tts/tts_tmp.*
+tts/tts_temp.*
+
+# OS / Office 임시 파일
+.DS_Store
+~$*
+
+# 공개 저장소에 올리지 않을 개인 자료 (학번이 들어간 원본, 학교 양식, 투고 원고)
+paper/thesis/
+paper/templates/
+paper/journal-koen/
+
+# 인수인계 메모 (읽은 뒤 삭제)
+HANDOFF.md
+
+# 실험 데이터·모델
+data/
+.venv/

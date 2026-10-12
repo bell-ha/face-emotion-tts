@@ -1,0 +1,8 @@
+events 1538 conf<0.5 0.33 median 0.587
+Angry 255 0.443
+Disgust 79 0.291
+Fear 173 0.595
+Happy 151 0.086
+Sad 225 0.507
+Surprise 187 0.118
+Neutral 468 0.256

@@ -1,0 +1,47 @@
+WARNING:absl:At this time, the v2.11+ optimizer `tf.keras.optimizers.Adam` runs slowly on M1/M2 Macs, please use the legacy Keras optimizer instead, located at `tf.keras.optimizers.legacy.Adam`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791738107.925700  697747 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M1 Max
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1791738107.926941  697966 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+/Users/jongha/Desktop/GitHub/face-emotion-tts/.venv/lib/python3.11/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+1/480 01-01-01-01-01-01-01 frames=98 face=1.00 elapsed=2s
+21/480 01-01-04-01-01-01-01 frames=114 face=1.00 elapsed=28s
+31/480 01-01-05-01-02-01-01 frames=104 face=1.00 elapsed=51s
+41/480 01-01-06-02-01-01-01 frames=149 face=1.00 elapsed=74s
+51/480 01-01-07-02-02-01-01 frames=120 face=1.00 elapsed=98s
+61/480 01-01-01-01-01-01-02 frames=109 face=1.00 elapsed=119s
+81/480 01-01-04-01-01-01-02 frames=115 face=1.00 elapsed=146s
+91/480 01-01-05-01-02-01-02 frames=113 face=1.00 elapsed=168s
+101/480 01-01-06-02-01-01-02 frames=114 face=1.00 elapsed=189s
+111/480 01-01-07-02-02-01-02 frames=120 face=1.00 elapsed=211s
+121/480 01-01-01-01-01-01-03 frames=103 face=1.00 elapsed=232s
+141/480 01-01-04-01-01-01-03 frames=108 face=1.00 elapsed=260s
+151/480 01-01-05-01-02-01-03 frames=114 face=1.00 elapsed=284s
+161/480 01-01-06-02-01-01-03 frames=99 face=1.00 elapsed=309s
+171/480 01-01-07-02-02-01-03 frames=115 face=1.00 elapsed=335s
+181/480 01-01-01-01-01-01-04 frames=99 face=1.00 elapsed=374s
+201/480 01-01-04-01-01-01-04 frames=101 face=1.00 elapsed=418s
+211/480 01-01-05-01-02-01-04 frames=104 face=1.00 elapsed=446s
+221/480 01-01-06-02-01-01-04 frames=118 face=1.00 elapsed=471s
+231/480 01-01-07-02-02-01-04 frames=116 face=1.00 elapsed=496s
+241/480 01-01-01-01-01-01-05 frames=108 face=1.00 elapsed=520s
+261/480 01-01-04-01-01-01-05 frames=98 face=1.00 elapsed=549s
+271/480 01-01-05-01-02-01-05 frames=122 face=1.00 elapsed=575s
+281/480 01-01-06-02-01-01-05 frames=97 face=1.00 elapsed=599s
+291/480 01-01-07-02-02-01-05 frames=128 face=1.00 elapsed=625s
+301/480 01-01-01-01-01-01-06 frames=99 face=1.00 elapsed=650s
+321/480 01-01-04-01-01-01-06 frames=106 face=1.00 elapsed=679s
+331/480 01-01-05-01-02-01-06 frames=125 face=1.00 elapsed=707s
+341/480 01-01-06-02-01-01-06 frames=108 face=1.00 elapsed=732s
+351/480 01-01-07-02-02-01-06 frames=120 face=1.00 elapsed=758s
+361/480 01-01-01-01-01-01-07 frames=117 face=1.00 elapsed=782s
+381/480 01-01-04-01-01-01-07 frames=106 face=1.00 elapsed=816s
+391/480 01-01-05-01-02-01-07 frames=120 face=1.00 elapsed=842s
+401/480 01-01-06-02-01-01-07 frames=109 face=1.00 elapsed=866s
+411/480 01-01-07-02-02-01-07 frames=124 face=1.00 elapsed=891s
+421/480 01-01-01-01-01-01-08 frames=105 face=1.00 elapsed=917s
+441/480 01-01-04-01-01-01-08 frames=126 face=1.00 elapsed=946s
+451/480 01-01-05-01-02-01-08 frames=106 face=1.00 elapsed=971s
+461/480 01-01-06-02-01-01-08 frames=119 face=1.00 elapsed=996s
+471/480 01-01-07-02-02-01-08 frames=112 face=1.00 elapsed=1021s

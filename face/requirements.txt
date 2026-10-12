@@ -1,0 +1,8 @@
+# STAGE 표정 인식 (face_emotion.py)
+# 개발 환경: macOS(Apple M1) Python 3.11, tensorflow 2.15.1 / mediapipe 0.10.14 / opencv 4.10
+opencv-python==4.10.0.84
+mediapipe==0.10.14
+numpy>=1.24,<2
+requests>=2.31
+tensorflow-cpu==2.13.1 ; platform_system == "Windows"
+tensorflow==2.15.1 ; platform_system != "Windows"

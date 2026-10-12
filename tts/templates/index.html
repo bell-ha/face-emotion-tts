@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STAGE — 표정으로 연출하는 감정 내레이션</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1d2433; --ink2:#5b6475; --ink3:#8a93a3;
+    --line:#e3e6ec; --accent:#3b5bdb; --accent-ink:#ffffff; --soft:#eef1f6;
+    --happy:#e8a400; --happy-bg:#fff4d6;
+    --sad:#2f6fd6;   --sad-bg:#e3edfc;
+    --angry:#d6453d; --angry-bg:#fde6e4;
+    --surprise:#8b4fd8; --surprise-bg:#f0e6fc;
+    --fear:#138a72;  --fear-bg:#dcf3ec;
+    --neutral:#6b7280; --neutral-bg:#eceef1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  header{background:var(--card);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+  .top{display:flex;align-items:center;gap:14px;height:64px}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:grid;place-items:center}
+  .logo svg{width:20px;height:20px}
+  .brand{font-weight:700;font-size:19px;letter-spacing:-.2px}
+  .brand small{display:block;font-weight:500;font-size:12.5px;color:var(--ink2);letter-spacing:0}
+  .top .sp{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);
+    background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink3)}
+  .dot.on{background:#2fb344;box-shadow:0 0 0 3px #2fb34433}
+  main.wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;padding-top:20px;padding-bottom:28px}
+  @media (max-width:980px){main.wrap{grid-template-columns:1fr}}
+  main.wrap > aside, main.wrap > section{align-self:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card + .card{margin-top:16px}
+  .card h2{margin:0 0 4px;font-size:15.5px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+  .card h2 .n{font-size:11.5px;font-weight:600;color:var(--accent);background:#e7ecfd;border-radius:6px;padding:1px 7px}
+  .hint{margin:0 0 12px;color:var(--ink2);font-size:13px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;font:inherit;font-size:16px;line-height:1.8;color:var(--ink);background:#fbfcfd;outline:none}
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #3b5bdb22;background:#fff}
+  button,select{font:inherit}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:8px 14px;
+    font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{background:var(--soft)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);padding:10px 20px;font-size:15px}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn svg{width:16px;height:16px}
+  select{border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#fff;color:var(--ink);font-size:14px}
+  label.switch{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer;user-select:none}
+  label.switch input{display:none}
+  label.switch .tr{width:36px;height:20px;border-radius:999px;background:#cfd4dc;position:relative;transition:.15s}
+  label.switch .tr::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px #0003}
+  label.switch input:checked + .tr{background:var(--accent)}
+  label.switch input:checked + .tr::after{left:18px}
+  .status{font-size:13px;color:var(--ink2)}
+  .status b{color:var(--ink)}
+  .preview{border:1px dashed var(--line);border-radius:10px;padding:12px 14px;min-height:56px;font-size:15.5px;line-height:2.05;background:#fcfcfd}
+  .preview .empty{color:var(--ink3)}
+  .chip{white-space:nowrap;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;border-radius:6px;
+    padding:1px 8px;margin:0 4px 0 3px;vertical-align:1px;line-height:1.6}
+  .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .c-행복{color:var(--happy);background:var(--happy-bg)}
+  .c-슬픔{color:var(--sad);background:var(--sad-bg)}
+  .c-분노{color:var(--angry);background:var(--angry-bg)}
+  .c-놀람{color:var(--surprise);background:var(--surprise-bg)}
+  .c-두려움{color:var(--fear);background:var(--fear-bg)}
+  .c-중립{color:var(--neutral);background:var(--neutral-bg)}
+  .typing{background:linear-gradient(transparent 62%,#ffe58f 62%)}
+  .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .actions .sp{flex:1}
+  audio{width:100%;margin-top:12px;height:40px}
+  .result{display:none;margin-top:12px;font-size:13px;color:var(--ink2)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{font-size:12px;color:var(--ink3);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 8px;border-bottom:1px solid #f0f2f5;vertical-align:top}
+  td.num{color:var(--ink3);width:28px}
+  td.mono,.mono{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;color:var(--ink2)}
+  .face-now{display:flex;align-items:center;gap:16px;margin:6px 0 10px}
+  .face-badge{width:76px;height:76px;border-radius:18px;display:grid;place-items:center;font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .face-meta{flex:1;min-width:0}
+  .face-meta .lab{font-size:22px;font-weight:800;letter-spacing:-.4px}
+  .face-meta .sub{font-size:12.5px;color:var(--ink2)}
+  .bar{height:7px;border-radius:999px;background:var(--soft);overflow:hidden;margin-top:6px}
+  .bar > i{display:block;height:100%;width:0;border-radius:999px;transition:width .25s}
+  .timeline{position:relative;height:26px;border-radius:7px;background:var(--soft);overflow:hidden;display:flex}
+  .timeline i{display:block;height:100%}
+  .tl-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:3px}
+  .tl-mark{position:absolute;top:0;bottom:0;width:2px;background:#1d2433;opacity:.75}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;font-size:12px;color:var(--ink2)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend span i{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .log{max-height:620px;overflow:auto;font-size:12.8px;margin:0;padding:0;list-style:none}
+  .log li{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px solid #f0f2f5;align-items:center}
+  .log li > span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log li:last-child{border-bottom:none}
+  .log .t{font-family:"SF Mono",Menlo,monospace;font-size:11.5px;color:var(--ink3);padding-top:1px}
+  .log .k{font-weight:700;margin-right:5px}
+  .k-face{color:#138a72}.k-tag{color:#3b5bdb}.k-tts{color:#b35c00}.k-err{color:#d6453d}.k-sys{color:#6b7280}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px}
+  .kv dt{color:var(--ink3)} .kv dd{margin:0;font-weight:600}
+  .spinner{width:14px;height:14px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:sp 0.8s linear infinite;display:none}
+  .busy .spinner{display:inline-block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 2 5.2 2 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></div>
+    <div class="brand"><span data-i18n="brand">STAGE — 표정으로 연출하는 감정 내레이션</span><small data-i18n="brandSub">대본을 쓰는 동안 내 표정이 문장마다 감정 연출로 기록됩니다 · 오디오북 · 1인 방송 · 내레이션 제작</small></div>
+    <div class="sp"></div>
+    <span class="pill"><span class="dot" id="srvDot"></span><span id="srvText" data-i18n="srvChecking">서버 확인 중…</span></span>
+    <span class="pill" id="backendPill">TTS: –</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ───────── 왼쪽: 작성 / 합성 ───────── -->
+  <section>
+    <div class="card">
+      <h2><span class="n">1</span><span data-i18n="h1">대본 쓰기 · 표정으로 연출</span></h2>
+      <p class="hint" data-i18n="hint1">카메라 앞에서 장면의 감정을 표정으로 지으며 대본을 쓰세요. 문장 끝에 <b>.</b> <b>!</b> <b>?</b> 를 입력하면, 그 문장을 쓰는 동안 가장 오래 유지된 표정이 연출 태그(<span class="chip c-행복">행복</span> 등)로 붙습니다. 표정이 뚜렷하지 않으면 기본 감정이 들어가고, 태그는 직접 고칠 수도 있습니다.</p>
+      <div class="row" style="margin-bottom:12px">
+        <label class="switch"><input type="checkbox" id="useFace" checked><span class="tr"></span><span data-i18n="useFace">얼굴 감정 사용</span></label>
+        <button class="btn" id="btnStart"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
+        <button class="btn" id="btnReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
+        <span class="status" id="collectStatus">대기 중</span>
+      </div>
+      <textarea id="text" spellcheck="false" placeholder="오디오북·방송 대본을 입력하세요. 예) 오늘 들려드릴 이야기는 숲속 작은 토끼의 첫 모험이에요!"></textarea>
+      <div class="row" style="margin-top:8px;justify-content:space-between">
+        <span class="status" id="sentenceStatus">현재 문장: –</span>
+        <span class="status" id="charCount"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">2</span><span data-i18n="h2">연출 미리보기</span></h2>
+      <p class="hint" data-i18n="hint2">문장별로 적용될 감정을 색으로 표시합니다. 태그가 없는 마지막 문장은 기본 감정으로 합성됩니다.</p>
+      <div class="preview" id="preview"><span class="empty">입력한 대본이 여기에 표시됩니다.</span></div>
+      <div class="actions">
+        <label class="status" for="defEmo" data-i18n="defEmo">기본 감정</label>
+        <select id="defEmo">
+          <option value="중립">중립</option><option value="행복">행복</option><option value="슬픔">슬픔</option>
+          <option value="분노">분노</option><option value="놀람">놀람</option><option value="두려움">두려움</option>
+        </select>
+        <label class="status" for="intensity" data-i18n="intensity" style="margin-left:6px">감정 강도</label>
+        <input type="range" id="intensity" min="0" max="1.5" step="0.1" value="1.0" style="width:110px;accent-color:var(--accent)">
+        <span class="status" id="intensityVal" style="min-width:28px;font-weight:600;color:var(--ink)">1.0</span>
+        <div class="sp"></div>
+        <button class="btn" id="btnPlan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span data-i18n="btnPlan">연출 계획 보기</span></button>
+        <button class="btn primary" id="btnTts"><span class="spinner"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span data-i18n="btnTts">음성 만들기</span></button>
+      </div>
+      <audio id="player" controls></audio>
+      <div class="result" id="result"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">3</span><span data-i18n="h3">문장별 연출 계획</span> <span class="status" style="font-weight:500" id="planNote"></span></h2>
+      <table id="planTable">
+        <thead><tr><th>#</th><th data-i18n="thSent">문장</th><th data-i18n="thEmo">감정</th><th data-i18n="thParams">운율 파라미터</th></tr></thead>
+        <tbody><tr><td colspan="4" class="status" data-i18n="planEmpty">‘연출 계획 보기’ 또는 ‘음성 만들기’를 누르면 표시됩니다.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ───────── 오른쪽: 실시간 표정 / 로그 ───────── -->
+  <aside>
+    <div class="card">
+      <h2 data-i18n="hFace">지금 내 표정</h2>
+      <div class="face-now">
+        <div class="face-badge c-중립" id="faceBadge">–</div>
+        <div class="face-meta">
+          <div class="lab" id="faceLabel" data-i18n="noSignal">신호 없음</div>
+          <div class="sub" id="faceSub" data-i18n="waitFace">face_emotion.py 실행 대기</div>
+          <div class="bar"><i id="confBar"></i></div>
+        </div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="tl-axis"><span data-i18n="tl20">−20초</span><span data-i18n="tl10">−10초</span><span data-i18n="tlNow">지금</span></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="hSpan">이번 문장 구간</h2>
+      <dl class="kv">
+        <dt data-i18n="kvSince">시작</dt><dd id="kvSince">–</dd>
+        <dt data-i18n="kvElapsed">경과</dt><dd id="kvElapsed">–</dd>
+        <dt data-i18n="kvLastTag">최근 태그</dt><dd id="kvLastTag">–</dd>
+        <dt data-i18n="kvResolve">판정 지연</dt><dd id="kvResolveMs">–</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="hLog">이벤트 로그</h2>
+      <ul class="log" id="log"></ul>
+    </div>
+  </aside>
+</main>
+
+<script>
+const EMOS = ["행복","슬픔","분노","놀람","두려움","중립"];
+const EMO_COLOR = {"행복":"var(--happy)","슬픔":"var(--sad)","분노":"var(--angry)","놀람":"var(--surprise)","두려움":"var(--fear)","중립":"var(--neutral)"};
+const LABEL_EN = {"행복":"Happy","슬픔":"Sad","분노":"Angry","놀람":"Surprise","두려움":"Fear","중립":"Neutral"};
+const TAG_RE = /<\s*(행복|슬픔|분노|놀람|두려움|중립)\s*>/g;
+const $ = (id) => document.getElementById(id);
+const ta = $("text");
+
+// ───────── 언어: 기본 한국어, ?lang=en 이면 화면 문구를 영어로(대본과 태그 텍스트는 한국어 유지) ─────────
+const EN = new URLSearchParams(location.search).get("lang") === "en";
+const L = (ko, en) => EN ? en : ko;
+const I18N_EN = {
+  brand: "STAGE — Directing Emotional Narration with Your Face",
+  brandSub: "Your facial expression while writing becomes per-sentence emotion direction · audiobooks · streaming · narration",
+  srvChecking: "Checking server…",
+  h1: "Write the script · direct with your face",
+  hint1: 'Write your script while acting out each scene\'s emotion in front of the camera. When you type <b>.</b> <b>!</b> <b>?</b> at the end of a sentence, the expression held longest while writing it is attached as an emotion tag (e.g. <span class="chip c-행복">Happy</span>). If no clear expression is found, the default emotion is used; tags can also be edited by hand.',
+  useFace: "Use facial emotion",
+  h2: "Direction preview",
+  hint2: "Each sentence is colored by the emotion it will be spoken with. A last sentence without a tag uses the default emotion.",
+  defEmo: "Default emotion",
+  intensity: "Intensity k",
+  btnPlan: "Show plan",
+  btnTts: "Generate speech",
+  h3: "Per-sentence direction plan",
+  thSent: "Sentence", thEmo: "Emotion", thParams: "Prosody parameters",
+  planEmpty: "Press “Show plan” or “Generate speech” to fill this table.",
+  hFace: "Current expression",
+  noSignal: "No signal",
+  waitFace: "Waiting for face_emotion.py",
+  tl20: "−20 s", tl10: "−10 s", tlNow: "now",
+  hSpan: "Current sentence span",
+  kvSince: "Started", kvElapsed: "Elapsed", kvLastTag: "Last tag", kvResolve: "Resolve latency",
+  hLog: "Event log",
+};
+function applyI18n(){
+  if (!EN) return;
+  document.documentElement.lang = "en";
+  document.title = "STAGE — Directing Emotional Narration with Your Face";
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const v = I18N_EN[el.dataset.i18n]; if (v !== undefined) el.innerHTML = v;
+  });
+  document.querySelectorAll("#defEmo option").forEach(o => { o.textContent = LABEL_EN[o.value]; });
+  ta.placeholder = "Type an audiobook or streaming script (Korean TTS).";
+}
+const emoName = (e) => EN ? (LABEL_EN[e] || e) : e;
+
+let collecting = false;
+let sentenceSince = null;      // 현재 문장 첫 입력 시각(ms)
+let sentenceCount = 0;
+let lastEventT = 0;
+let events = [];
+let busyTts = false;
+
+// ───────── 로그 ─────────
+function fmtClock(ms){ const d = new Date(ms); return d.toTimeString().slice(0,8); }
+function log(kind, msg){
+  const li = document.createElement("li");
+  const label = (EN ? {face:"Face",tag:"Tag",tts:"TTS",err:"Error",sys:"System"}
+                     : {face:"표정",tag:"태그",tts:"합성",err:"오류",sys:"시스템"})[kind] || kind;
+  li.innerHTML = `<span class="t">${fmtClock(Date.now())}</span><span><span class="k k-${kind}">${label}</span>${msg}</span>`;
+  const ul = $("log"); ul.prepend(li);
+  while (ul.children.length > 80) ul.lastChild.remove();
+}
+function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function chip(e){ return `<span class="chip c-${e}">${emoName(e)}</span>`; }
+
+// ───────── 서버 상태 ─────────
+async function checkServer(){
+  try{
+    const r = await fetch("/get_config"); const j = await r.json();
+    $("srvDot").classList.add("on"); $("srvText").textContent = L("서버 연결됨", "Server connected");
+    const mode = j.backend === "edge" ? (String(j.mode).includes("prosody") ? "" : L(" · 프리셋만", " · presets only")) : "";
+    $("backendPill").textContent = `TTS: ${j.backend === "openai" ? "OpenAI gpt-4o-mini-tts" : L("edge (무료 온라인 TTS + 로컬 운율 후처리)", "edge (free online TTS + local prosody post-processing)")}${mode}`;
+    log("sys", L(`서버 연결 · 백엔드 <b>${j.backend}</b>${mode} · 출력 ${j.format}`, `Connected · backend <b>${j.backend}</b>${mode} · ${j.format}`));
+  }catch(e){
+    $("srvDot").classList.remove("on"); $("srvText").textContent = L("서버 연결 안 됨", "Server offline");
+  }
+}
+
+// ───────── 수집 시작/리셋 ─────────
+$("btnStart").onclick = () => {
+  collecting = true; sentenceSince = null; sentenceCount = 0;
+  updateCollect(); log("sys", L("수집 시작", "Capture started"));
+  ta.focus();
+};
+$("btnReset").onclick = () => {
+  collecting = false; sentenceSince = null; sentenceCount = 0;
+  ta.value = ""; renderPreview(); updateCollect(); log("sys", L("초기화", "Reset"));
+};
+function updateCollect(){
+  $("collectStatus").innerHTML = collecting
+    ? L(`<b>수집 중</b> · 태그된 문장 ${sentenceCount}개`, `<b>Capturing</b> · ${sentenceCount} sentences tagged`)
+    : L("대기 중 (Start를 누르면 자동 태깅)", "Idle (press Start for auto-tagging)");
+}
+
+// ───────── 입력 처리: 문장 끝에서 태그 삽입 ─────────
+ta.addEventListener("beforeinput", (e) => {
+  if (e.inputType && e.inputType.startsWith("insert") && sentenceSince === null) {
+    sentenceSince = Date.now();
+  }
+});
+ta.addEventListener("input", async (e) => {
+  renderPreview();
+  if (!collecting) return;
+  if (e.inputType !== "insertText" || !e.data) return;
+  const ch = e.data.slice(-1);
+  if (!".!?".includes(ch)) return;
+  const pos = ta.selectionStart;
+  if (ta.value.slice(pos).trimStart().startsWith("<")) return;   // 이미 태그가 있음
+  await insertTagAt(pos);
+});
+
+async function resolveTag(since, until){
+  const useFace = $("useFace").checked;
+  let tag = "", ms = null;
+  if (useFace){
+    const t0 = performance.now();
+    try{
+      const r = await fetch("/emotion/resolve_one", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({since_ms: since, until_ms: until})});
+      tag = (await r.json()).tag || "";
+    }catch(err){ log("err", L("resolve_one 실패", "resolve_one failed")); }
+    ms = performance.now() - t0;
+  }
+  const fallback = !tag;
+  if (fallback) tag = `<${$("defEmo").value}>`;
+  return {tag, ms, fallback, useFace};
+}
+
+async function insertTagAt(pos){
+  const until = Date.now();
+  const since = sentenceSince ?? (until - 1000);
+  sentenceSince = null;
+  const {tag, ms, fallback, useFace} = await resolveTag(since, until);
+  const v = ta.value;
+  ta.value = v.slice(0, pos) + tag + v.slice(pos);
+  const np = pos + tag.length;
+  ta.setSelectionRange(np, np);
+  sentenceCount++; updateCollect(); renderPreview();
+  const emo = tag.replace(/[<>]/g, "");
+  $("kvLastTag").innerHTML = chip(emo) + (fallback ? ` <span class="status">${L("(기본 감정)", "(default)")}</span>` : "");
+  $("kvResolveMs").textContent = ms === null ? "–" : `${ms.toFixed(1)} ms`;
+  const span = ((until - since)/1000).toFixed(1);
+  const why = fallback ? L(" 기본", " default") : "";
+  log("tag", L(`문장 ${sentenceCount} · ${span}초 → `, `S${sentenceCount} · ${span} s → `) + `${chip(emo)}${why}${ms!==null?` · ${ms.toFixed(1)} ms`:""}`);
+}
+
+// ───────── 미리보기(칩 하이라이트) ─────────
+function parseSegments(raw){
+  const s = raw.trim(); const segs = []; let pos = 0; let m;
+  TAG_RE.lastIndex = 0;
+  while ((m = TAG_RE.exec(s)) !== null){
+    const before = s.slice(pos, m.index);
+    if (before.trim()) segs.push([before.trim(), m[1]]);
+    pos = m.index + m[0].length;
+  }
+  const tail = s.slice(pos);
+  if (tail.trim()) segs.push([tail.trim(), null]);
+  return segs;
+}
+function renderPreview(){
+  const segs = parseSegments(ta.value);
+  const def = $("defEmo").value;
+  if (!segs.length){ $("preview").innerHTML = `<span class="empty">${L("입력한 대본이 여기에 표시됩니다.", "Your script will appear here.")}</span>`; }
+  else {
+    $("preview").innerHTML = segs.map(([t, e]) => e
+      ? `${esc(t)}${chip(e)}`
+      : `<span class="typing">${esc(t)}</span>${chip(def)}<span class="status" style="font-size:11.5px">${L("기본", "default")}</span>`).join(" ");
+  }
+  const tagged = segs.filter(s => s[1]).length;
+  const nch = ta.value.replace(TAG_RE,"").length;
+  $("charCount").textContent = L(`${nch}자 · 태그 ${tagged}개`, `${nch} chars · ${tagged} tags`);
+}
+$("defEmo").onchange = renderPreview;
+$("intensity").oninput = () => { $("intensityVal").textContent = Number($("intensity").value).toFixed(1); };
+
+// ───────── 표정 폴링 ─────────
+function renderLegend(){
+  $("legend").innerHTML = EMOS.map(e => `<span><i style="background:${EMO_COLOR[e]}"></i>${emoName(e)}</span>`).join("");
+}
+async function pollFace(){
+  try{
+    const r = await fetch("/debug/emo_history?limit=200"); const j = await r.json();
+    events = j.events || [];
+    const fresh = events.filter(ev => ev.t > lastEventT);
+    if (lastEventT && fresh.length){
+      fresh.slice(-5).forEach(ev => log("face", `${chip(ev.emo)} <span class="mono">${ev.label} ${Number(ev.confidence).toFixed(2)}</span>`));
+    }
+    if (events.length) lastEventT = Math.max(lastEventT, events[events.length-1].t);
+    renderFace();
+  }catch(e){}
+}
+function renderFace(){
+  const now = Date.now();
+  if (!events.length){ $("timeline").innerHTML = ""; return; }
+  const last = events[events.length-1];
+  const age = (now - last.t)/1000;
+  $("faceBadge").className = `face-badge c-${last.emo}`;
+  $("faceBadge").textContent = emoName(last.emo);
+  $("faceBadge").style.fontSize = EN ? "15px" : "";
+  $("faceLabel").textContent = EN ? `${last.label}` : `${last.emo} · ${last.label}`;
+  $("faceSub").textContent = L(`신뢰도 ${Number(last.confidence).toFixed(2)} · ${age < 1 ? "방금" : age.toFixed(1)+"초 전"} 전환`,
+                               `confidence ${Number(last.confidence).toFixed(2)} · changed ${age < 1 ? "just now" : age.toFixed(1)+" s ago"}`);
+  $("confBar").style.width = `${Math.min(100, last.confidence*100)}%`;
+  $("confBar").style.background = EMO_COLOR[last.emo];
+  // 20초 타임라인
+  const W = 20000, t0 = now - W;
+  let html = ""; let prev = null;
+  for (const ev of events){ if (ev.t <= t0) prev = ev; }
+  let cursor = t0, cur = prev;
+  for (const ev of events){
+    if (ev.t <= t0) continue;
+    const w = (ev.t - cursor)/W*100;
+    html += `<i style="width:${w}%;background:${cur ? EMO_COLOR[cur.emo] : "transparent"};opacity:${cur ? .85 : 1}"></i>`;
+    cursor = ev.t; cur = ev;
+  }
+  html += `<i style="width:${(now-cursor)/W*100}%;background:${cur ? EMO_COLOR[cur.emo] : "transparent"};opacity:.85"></i>`;
+  if (sentenceSince && sentenceSince > t0){
+    html += `<span class="tl-mark" style="left:${(sentenceSince-t0)/W*100}%" title="${L("현재 문장 시작", "sentence start")}"></span>`;
+  }
+  $("timeline").innerHTML = html;
+}
+function tick(){
+  if (sentenceSince){
+    $("kvSince").textContent = fmtClock(sentenceSince);
+    const el = ((Date.now()-sentenceSince)/1000).toFixed(1);
+    $("kvElapsed").textContent = L(`${el}초`, `${el} s`);
+    $("sentenceStatus").innerHTML = L(`현재 문장: <b>작성 중</b> (${el}초)`, `Current sentence: <b>writing</b> (${el} s)`);
+  } else {
+    $("kvSince").textContent = "–"; $("kvElapsed").textContent = "–";
+    $("sentenceStatus").textContent = L("현재 문장: –", "Current sentence: –");
+  }
+  renderFace();
+}
+
+// ───────── 합성 계획 ─────────
+function fmtParams(p){
+  if (!p) return "";
+  const keys = ["rate","pitch","volume","speed","f0_range","f0_shift","tempo","intensity"];
+  const parts = [];
+  for (const k of keys){ if (p[k] !== undefined && p[k] !== null) parts.push(`${k === "intensity" ? "k" : k} ${p[k]}`); }
+  return parts.join(" · ");
+}
+async function loadPlan(){
+  const text = ta.value.trim();
+  if (!text) return;
+  const r = await fetch("/debug/segments", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({text, emotion: $("defEmo").value, intensity: Number($("intensity").value)})});
+  const j = await r.json();
+  const tb = $("planTable").querySelector("tbody");
+  tb.innerHTML = j.segments.map((s, i) => `<tr>
+      <td class="num">${i+1}</td>
+      <td>${esc(s.text)}${s.perf_text && s.perf_text !== s.text ? `<div class="mono">${L("연출", "rewrite")}: ${esc(s.perf_text)}</div>` : ""}</td>
+      <td>${chip(s.emotion)}${s.tagged ? "" : `<div class="status" style="font-size:11.5px">${L("기본 감정", "default")}</div>`}</td>
+      <td class="mono">${esc(fmtParams(s.params) || `speed ${s.speed}`)}</td></tr>`).join("");
+  $("planNote").textContent = L(`· 백엔드 ${j.backend} · ${j.segments.length}문장`, `· backend ${j.backend} · ${j.segments.length} sentences`);
+}
+$("btnPlan").onclick = loadPlan;
+
+// ───────── 합성 ─────────
+$("btnTts").onclick = async () => {
+  if (busyTts) return;
+  const text = ta.value.trim();
+  if (!text){ log("err", L("대본이 비어 있습니다.", "Script is empty.")); return; }
+  busyTts = true; const btn = $("btnTts"); btn.disabled = true; btn.classList.add("busy");
+  const nSeg = parseSegments(text).length;
+  log("tts", L(`/tts 요청 · ${nSeg}문장`, `/tts request · ${nSeg} sentences`));
+  loadPlan();
+  const t0 = performance.now();
+  try{
+    const r = await fetch("/tts", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({text, emotion: $("defEmo").value, intensity: Number($("intensity").value)})});
+    if (!r.ok){ const j = await r.json().catch(()=>({})); throw new Error(j.error || r.statusText); }
+    const blob = await r.blob();
+    const dt = (performance.now() - t0)/1000;
+    let timing = {}; try { timing = JSON.parse(r.headers.get("X-STAGE-Timing") || "{}"); } catch(e){}
+    const url = URL.createObjectURL(blob);
+    const p = $("player"); p.src = url; p.play().catch(()=>{});
+    const audioSec = timing.audio_sec ? L(` · 음성 ${timing.audio_sec.toFixed(1)}초`, ` · audio ${timing.audio_sec.toFixed(1)} s`) : "";
+    $("result").style.display = "block";
+    const dl = `<a href="${url}" download="facevox.${blob.type.includes("mpeg")?"mp3":"wav"}">${L("다운로드", "Download")}</a>`;
+    $("result").innerHTML = L(`완료 · 응답 ${dt.toFixed(2)}초${audioSec} · `, `Done · response ${dt.toFixed(2)} s${audioSec} · `) + dl;
+    log("tts", L(`완료 · ${dt.toFixed(2)}초 · ${(blob.size/1024).toFixed(0)} KB`, `Done · ${dt.toFixed(2)} s · ${(blob.size/1024).toFixed(0)} KB`));
+  }catch(e){
+    log("err", esc(String(e.message || e)));
+  }finally{
+    busyTts = false; btn.disabled = false; btn.classList.remove("busy");
+  }
+};
+
+// ───────── 시작 ─────────
+applyI18n(); renderLegend(); renderPreview(); updateCollect(); checkServer();
+pollFace(); setInterval(pollFace, 500); setInterval(tick, 200);
+window.facevox = { insertTagAt, renderPreview, loadPlan, setCollecting(v){ collecting = v; updateCollect(); } };
+</script>
+</body>
+</html>
