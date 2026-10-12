@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-- 원고: `paper/2_journal-koen/STAGE_KOEN_v05.md` (2026-10-12, 지도교수 검토용: 기여 4가지 명시, 확인 안 된 정보 제거, 규정 체크리스트 `docs/submission/koen-checklist.md` 통과, 15쪽). 제출용 `STAGE_KOEN_v05.docx`, 확인용 `.pdf`. 사람 청취 평가는 이번 투고에서 하지 않기로 함
+- 원고: `paper/2_journal-koen/STAGE_KOEN_v06.md` (2026-10-12, 가상 심사 `review_v05.md` 필수 항목 반영, 그림 7·표 6, 참고문헌 59편, 15쪽). 제출용 `STAGE_KOEN_v06.docx`, 확인용 `.pdf`. v05는 지도교수에게 보낸 판. 사람 청취 평가는 이번 투고에서 하지 않기로 함
 - 투고 전략: `docs/plan/project-plan.md` "투고 전략". 신청서: `docs/submission/submission-intent.md`.
 - 실험 근거: `experiments/E1_face-recognition`, `E2_emotion-stabilization`, `E3_emotional-speech`(+`E3b_intensity`), `E4_system-latency`, `E5_improvements`의 README.
 - 가상 심사 의견: `paper/2_journal-koen/review_v01.md` (상세 수정안·후보 참고문헌).
