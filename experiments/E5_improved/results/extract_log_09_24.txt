@@ -1,0 +1,78 @@
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-09 frames=97 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-09 frames=97 face=1.00 elapsed=32s
+31/60 01-01-05-01-02-01-09 frames=111 face=1.00 elapsed=52s
+41/60 01-01-06-02-01-01-09 frames=96 face=1.00 elapsed=72s
+51/60 01-01-07-02-02-01-09 frames=106 face=1.00 elapsed=91s
+Actor_09 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-10 frames=106 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-10 frames=99 face=1.00 elapsed=28s
+31/60 01-01-05-01-02-01-10 frames=123 face=1.00 elapsed=49s
+41/60 01-01-06-02-01-01-10 frames=105 face=1.00 elapsed=70s
+51/60 01-01-07-02-02-01-10 frames=126 face=1.00 elapsed=95s
+Actor_10 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-11 frames=94 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-11 frames=100 face=1.00 elapsed=30s
+31/60 01-01-05-01-02-01-11 frames=104 face=1.00 elapsed=56s
+41/60 01-01-06-02-01-01-11 frames=96 face=1.00 elapsed=81s
+51/60 01-01-07-02-02-01-11 frames=112 face=1.00 elapsed=105s
+Actor_11 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-12 frames=108 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-12 frames=109 face=1.00 elapsed=34s
+31/60 01-01-05-01-02-01-12 frames=111 face=1.00 elapsed=61s
+41/60 01-01-06-02-01-01-12 frames=111 face=1.00 elapsed=88s
+51/60 01-01-07-02-02-01-12 frames=125 face=1.00 elapsed=115s
+Actor_12 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-13 frames=95 face=1.00 elapsed=2s
+21/60 01-01-04-01-01-01-13 frames=107 face=1.00 elapsed=32s
+31/60 01-01-05-01-02-01-13 frames=108 face=1.00 elapsed=58s
+41/60 01-01-06-02-01-01-13 frames=101 face=1.00 elapsed=84s
+51/60 01-01-07-02-02-01-13 frames=102 face=1.00 elapsed=107s
+Actor_13 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-14 frames=103 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-14 frames=111 face=1.00 elapsed=33s
+31/60 01-01-05-01-02-01-14 frames=111 face=1.00 elapsed=59s
+41/60 01-01-06-02-01-01-14 frames=100 face=1.00 elapsed=87s
+51/60 01-01-07-02-02-01-14 frames=109 face=1.00 elapsed=113s
+Actor_14 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-15 frames=100 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-15 frames=104 face=1.00 elapsed=33s
+31/60 01-01-05-01-02-01-15 frames=110 face=1.00 elapsed=56s
+41/60 01-01-06-02-01-01-15 frames=99 face=1.00 elapsed=80s
+51/60 01-01-07-02-02-01-15 frames=98 face=1.00 elapsed=105s
+Actor_15 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-16 frames=112 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-16 frames=107 face=1.00 elapsed=36s
+31/60 01-01-05-01-02-01-16 frames=117 face=1.00 elapsed=62s
+41/60 01-01-06-02-01-01-16 frames=112 face=1.00 elapsed=87s
+51/60 01-01-07-02-02-01-16 frames=124 face=1.00 elapsed=112s
+Actor_16 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+1/60 01-01-01-01-01-01-17 frames=114 face=1.00 elapsed=3s
+21/60 01-01-04-01-01-01-17 frames=109 face=1.00 elapsed=31s
+31/60 01-01-05-01-02-01-17 frames=107 face=1.00 elapsed=55s
+41/60 01-01-06-02-01-01-17 frames=110 face=1.00 elapsed=79s
+51/60 01-01-07-02-02-01-17 frames=133 face=1.00 elapsed=105s
+Actor_17 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_18 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_19 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_20 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_21 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_22 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_23 extracted
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Actor_24 extracted
+ALLDONE

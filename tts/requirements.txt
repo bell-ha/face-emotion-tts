@@ -1,0 +1,19 @@
+# STAGE TTS 서버 (Python 3.10–3.11에서 확인; 개발 환경 버전 기준 하한)
+Flask>=3.0
+python-dotenv>=1.0
+pydub>=0.25.1          # 문장별 오디오 병합 (MP3 출력에는 ffmpeg 필요, 없으면 WAV)
+requests>=2.31
+
+# edge 백엔드(키 불필요): 무료 온라인 TTS(edge-tts) + 로컬 운율 후처리(E3 prosody.py)
+edge-tts>=7.0          # Microsoft 온라인 음성 서비스 사용 → 인터넷 연결 필요
+numpy>=1.24
+scipy>=1.10
+soundfile>=0.12
+librosa>=0.10
+praat-parselmouth>=0.4.3
+
+# OpenAI 백엔드 (OPENAI_API_KEY가 있을 때만 사용)
+openai>=1.70           # audio.speech.create(instructions=...) 지원 버전
+
+# 테스트
+pytest>=7

@@ -1,0 +1,89 @@
+{
+ "rule": "max dev acc9 s.t. dev spk_cos(emotional vs B neutral) >= 0.60 and dev SQUIM-MOS >= 4.0; tie -> higher spk; fallback spk >= 0.50",
+ "rule_used": "spk_cos>=0.6 & mos>=4.0",
+ "dev_candidates": [
+  {
+   "variant": "D",
+   "k": 0.25,
+   "acc9": 0.375,
+   "spk_cos": 0.6832,
+   "mos": 4.2774
+  },
+  {
+   "variant": "D",
+   "k": 0.5,
+   "acc9": 0.4167,
+   "spk_cos": 0.4326,
+   "mos": 4.1048
+  },
+  {
+   "variant": "D",
+   "k": 0.75,
+   "acc9": 0.6667,
+   "spk_cos": 0.2981,
+   "mos": 3.7273
+  },
+  {
+   "variant": "D",
+   "k": 1.0,
+   "acc9": 0.7917,
+   "spk_cos": 0.231,
+   "mos": 3.4582
+  },
+  {
+   "variant": "DP",
+   "k": 0.25,
+   "acc9": 0.3333,
+   "spk_cos": 0.8929,
+   "mos": 3.9689
+  },
+  {
+   "variant": "DP",
+   "k": 0.5,
+   "acc9": 0.375,
+   "spk_cos": 0.8038,
+   "mos": 3.8126
+  },
+  {
+   "variant": "DP",
+   "k": 0.75,
+   "acc9": 0.4167,
+   "spk_cos": 0.7199,
+   "mos": 3.4497
+  },
+  {
+   "variant": "DP",
+   "k": 1.0,
+   "acc9": 0.5417,
+   "spk_cos": 0.6371,
+   "mos": 2.9853
+  }
+ ],
+ "chosen": {
+  "variant": "D",
+  "k": 0.25,
+  "dev": {
+   "acc9": 0.375,
+   "spk_cos": 0.6832,
+   "mos": 4.2774
+  },
+  "test": {
+   "k": 0.25,
+   "n": 48.0,
+   "acc9": 0.2708,
+   "acc9_lo": 0.2083,
+   "acc9_hi": 0.3125,
+   "macroF1": 0.2165,
+   "p_target_mean": 0.2657,
+   "w2v4_acc": 0.2188,
+   "spk_cos": 0.694,
+   "spk_lo": 0.6777,
+   "spk_hi": 0.7129,
+   "spk_cos_min": 0.4037,
+   "mos": 4.3251,
+   "mos_lo": 4.286,
+   "mos_hi": 4.3648,
+   "pesq": 3.9975
+  }
+ }
+}

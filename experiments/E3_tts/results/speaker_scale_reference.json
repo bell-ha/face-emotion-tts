@@ -1,0 +1,17 @@
+{
+ "SunHi_vs_SunHi_diff_sentence": [
+  0.800511911542829,
+  0.04505779826077964,
+  66
+ ],
+ "SunHi_vs_InJoon(male)_same_sentence": [
+  0.21259161284171346,
+  0.04721322775942013,
+  12
+ ],
+ "SunHi_vs_OpenAI_shimmer_same_sentence": [
+  0.25117850595873015,
+  0.029523178031633207,
+  2
+ ]
+}

@@ -1,0 +1,138 @@
+{
+ "DP_PRESETS": {
+  "happy": {
+   "f0_range": 1.0,
+   "f0_shift": 6.08,
+   "contour": [
+    "none",
+    0.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 0.998,
+   "tilt_db": 3.0,
+   "gain_db": 2.0,
+   "breath_snr": null
+  },
+  "sad": {
+   "f0_range": 0.4,
+   "f0_shift": -8.12,
+   "contour": [
+    "decline",
+    0.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 0.609,
+   "tilt_db": 0.0,
+   "gain_db": -3.99,
+   "breath_snr": null
+  },
+  "angry": {
+   "f0_range": 2.0,
+   "f0_shift": -1.59,
+   "contour": [
+    "none",
+    0.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 1.412,
+   "tilt_db": 3.0,
+   "gain_db": 5.55,
+   "breath_snr": null
+  },
+  "surprise": {
+   "f0_range": 1.4,
+   "f0_shift": 8.92,
+   "contour": [
+    "onset_rise",
+    6.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 1.29,
+   "tilt_db": 0.0,
+   "gain_db": 1.89,
+   "breath_snr": null
+  },
+  "fear": {
+   "f0_range": 0.6,
+   "f0_shift": -4.66,
+   "contour": [
+    "none",
+    0.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 1.29,
+   "tilt_db": -3.0,
+   "gain_db": -7.18,
+   "breath_snr": 20.0
+  },
+  "neutral": {
+   "f0_range": 0.8,
+   "f0_shift": -1.0,
+   "contour": [
+    "none",
+    0.0
+   ],
+   "tremor": [
+    6.0,
+    0.0
+   ],
+   "tempo": 0.95,
+   "tilt_db": -3.0,
+   "gain_db": 0.0,
+   "breath_snr": null
+  }
+ },
+ "dev_measured_C_minus_B": {
+  "happy": {
+   "d_f0_st": 6.076,
+   "d_rate_pct": -0.153,
+   "d_int_mean_db": 0.004,
+   "d_hf_ratio_db": 4.889
+  },
+  "sad": {
+   "d_f0_st": -6.123,
+   "d_rate_pct": -39.116,
+   "d_int_mean_db": 0.007,
+   "d_hf_ratio_db": -1.223
+  },
+  "angry": {
+   "d_f0_st": -0.588,
+   "d_rate_pct": 28.325,
+   "d_int_mean_db": 1.553,
+   "d_hf_ratio_db": -0.364
+  },
+  "surprise": {
+   "d_f0_st": 6.922,
+   "d_rate_pct": 29.023,
+   "d_int_mean_db": -0.113,
+   "d_hf_ratio_db": 5.726
+  },
+  "fear": {
+   "d_f0_st": -4.661,
+   "d_rate_pct": 28.951,
+   "d_int_mean_db": -3.182,
+   "d_hf_ratio_db": -1.3
+  },
+  "neutral": {
+   "d_f0_st": 0.0,
+   "d_rate_pct": 0.0,
+   "d_int_mean_db": 0.0,
+   "d_hf_ratio_db": 0.0
+  }
+ }
+}
