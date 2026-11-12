@@ -15,10 +15,12 @@ app/tts/tts_temp.*
 .DS_Store
 ~$*
 
-# 공개 저장소에 올리지 않을 개인 자료 (학번이 들어간 원본, 학교 양식, 투고 원고)
-paper/1_thesis/
+# 논문 폴더: 최종 PDF 두 개와 안내만 공개하고, 원본(docx, 학번 등 메타데이터)·학교 및 학회 양식·검토 메모·서식 도구는 올리지 않는다
+paper/1_thesis/*
+!paper/1_thesis/thesis_final_2025-11-06.pdf
 paper/templates/
-paper/2_journal-koen/
+paper/2_journal-koen/*
+!paper/2_journal-koen/STAGE_KOEN_v06.pdf
 
 # 인수인계 메모 (읽은 뒤 삭제)
 HANDOFF.md

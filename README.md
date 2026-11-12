@@ -12,7 +12,7 @@ Real-time facial expression-driven emotional TTS (MediaPipe + CNN + OpenAI TTS /
 |---|---|
 | `app/` | **실제 프로그램.** 표정 인식(`face/`), 음성 합성 서버와 웹 화면(`tts/`), 자동 테스트(`tests/`) |
 | `experiments/` | **논문 실험.** 폴더마다 README에 방법과 결과 수치가 있음 |
-| `paper/` | **논문 파일.** 졸업논문, 학술지 원고, 학교 양식 (개인 자료라 git에는 올리지 않음) |
+| `paper/` | **논문 파일.** 학사 졸업논문 최종본 PDF와 학술지 투고 준비 원고 PDF (원본 docx와 양식은 올리지 않음, [paper/README.md](paper/README.md)) |
 | `docs/` | **메모.** 계획, 투고 준비, 조사 자료 |
 | `assets/` | 졸업논문 때 만든 그림과 감정별 음성 샘플 |
 | `data/` | 데이터셋, 모델, 캐시 같은 큰 파일 (git 제외, 다시 받거나 만들 수 있음) |
@@ -30,9 +30,9 @@ face-emotion-tts/
 │   ├── E4_system-latency/         # 전체 시스템 지연 시간, 웹 UI 캡처
 │   └── E5_improvements/           # 개선한 안정화·문장 태깅, 다른 FER 모델 비교
 ├── paper/
-│   ├── 1_thesis/        # 학사 졸업논문 (최종본, 초안, 참고문헌)
-│   ├── 2_journal-koen/  # 학술지 원고 (최신본만, forms/=학회 양식, old/=이전 버전, tools/=서식 변환기)
-│   └── templates/       # 학교 논문 양식
+│   ├── 1_thesis/        # 학사 졸업논문 최종본 PDF
+│   ├── 2_journal-koen/  # 학술지 투고 준비 원고 PDF (미게재)
+│   └── README.md        # 논문 상태 안내
 ├── docs/
 │   ├── plan/        # 프로젝트 계획, 실험 계획, 다음 할 일(next-steps.md)
 │   ├── submission/  # 투고 규정, 투고예정신청서, 그림 양식 조사
