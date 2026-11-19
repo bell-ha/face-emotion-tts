@@ -1,13 +1,13 @@
 # E3. 감정 음성 렌더링 평가 (속도 단독 vs 명시적 운율 제어)
 
-작성: agent-tts, 2026-10-12. 모든 수치는 이 폴더의 스크립트를 실제로 돌려 얻은 값이다(시드 42).
+작성일: 2026-10-12. 모든 수치는 이 폴더의 스크립트를 실제로 돌려 얻은 값이다(시드 42).
 
 ## 1. 목적
 
-졸업논문 구현은 `gpt-4o-mini-tts`에 `speed`와 문장부호 재작성만 넘겼고, 감정 지시문(`instruction`)은 TTS 호출에 전달되지 않았다(`app/tts/app.py`의 `tts_one`, `client.audio.speech.create(... speed=speed, input=perf_text)`). 이 실험은 다음 두 가지를 객관 지표로 확인한다.
+졸업논문 구현은 `gpt-4o-mini-tts`에 `speed`와 문장부호 재작성만 넘겼고, 감정 지시문(`instruction`)은 TTS 호출에 전달되지 않았다(졸업논문 시점 `app/tts/app.py`의 `tts_one`, `client.audio.speech.create(... speed=speed, input=perf_text)`). 현재 코드는 `app/tts/backends.py`에서 `instructions`를 넘기도록 고쳤다(E4). 이 실험은 다음 두 가지를 객관 지표로 확인한다.
 (1) 속도만 바꾸는 방식이 감정 전달에 부족한가. (2) 학습 없이 기존 TTS에 붙일 수 있는 명시적 운율 제어(SSML prosody 프리셋 + PSOLA 후처리)가 감정 전달을 얼마나 개선하며, 그 대가(화자 정체성, 음질)는 무엇인가.
 
-사람 청취 평가는 하지 않았다. 감정 전달은 자동 음성 감정 인식(SER) 모델 **emotion2vec_plus_large**로 대리 측정했다(한계 참조).
+사람 청취 평가는 하지 않았다(후속으로 진행 예정). 감정 전달은 자동 음성 감정 인식(SER) 모델 **emotion2vec_plus_large**로 대리 측정했다(한계 참조).
 
 ## 2. 조건
 
@@ -44,7 +44,7 @@ S01은 '반갑습니다'가 약한 긍정 어휘를 포함한다(졸업논문 �
 
 ## 3. 프리셋 설계와 튜닝 절차 (검증 타당성)
 
-- 각 감정의 **방향**(높/낮, 빠름/느림, 범위 확대/축소, 음성 품질)은 졸업논문 프리셋 서술(`app/tts/app.py` `EMOTION_PRESETS["instruction"]`)과 운율 문헌(Murray & Arnott, 1993; Scherer, 2003; Juslin & Laukka, 2003; 음성 품질은 Gobl & Ní Chasaide, 2003)에서 정했다. 둘이 상충하는 분노(논문: 낮은 피치 / 문헌: 높은 피치·넓은 범위)와 두려움(논문: 낮은 피치·느림 / 문헌: 높은 피치·빠름)은 양방향 모두 격자에 넣었다. (서지 실존·정확성 확인은 L1 담당)
+- 각 감정의 **방향**(높/낮, 빠름/느림, 범위 확대/축소, 음성 품질)은 졸업논문 프리셋 서술(`app/tts/app.py` `EMOTION_PRESETS["instruction"]`)과 운율 문헌(Murray & Arnott, 1993; Scherer, 2003; Juslin & Laukka, 2003; 음성 품질은 Gobl & Ní Chasaide, 2003)에서 정했다. 둘이 상충하는 분노(논문: 낮은 피치 / 문헌: 높은 피치·넓은 범위)와 두려움(논문: 낮은 피치·느림 / 문헌: 높은 피치·빠름)은 양방향 모두 격자에 넣었다.
 - **크기**만 dev 4문장(S03~S06)에서 격자 탐색으로 골랐다. 평가 8문장(S01, S02, S07~S12)은 튜닝에 전혀 쓰지 않았다. 논문 수치는 이 held-out 8문장 결과다.
 - 목적함수: dev 정답 수(6감정 제한 argmax) + 0.01 × 평균 로그 마진(log10 P(목표) − 최대 log10 P(타 감정), ±10 절단). emotion2vec 출력이 거의 one-hot이라 정답 수 동점을 마진으로 해소했다.
 - 순서: C 격자(감정당 40~50조합) → C 고정 → C 출력 위에서 D 격자(감정당 36~216조합).
@@ -74,7 +74,7 @@ edge-tts의 `pitch`는 SSML prosody의 Hz 단위 오프셋이다(SunHi 중립 �
 | 두려움 | 0.6 | 0 | 없음 | 없음(후보 6 Hz/0.6 st, 8 Hz/1.0 st 미선택) | 1.00 | −3 | −4 | 20 |
 | 중립 | 0.8 | −1 | 없음 | 없음 | 0.95 | −3 | 0 | 없음 |
 
-파라미터 정의(`scripts/prosody.py`의 `apply_dsp`):
+파라미터 정의(`app/tts/prosody.py`의 `apply_dsp`):
 - **F0 범위 배율 k, 이동 s**: 각 피치 점을 반음으로 바꾼 뒤 st' = med + k·(st − med) + s (med = 발화 중앙값). Praat `To Manipulation`(10 ms, 75~600 Hz) → PitchTier 교체 → overlap-add 재합성.
 - **윤곽 성형**: `onset_rise` = 유성 구간 정규화 시간 0에서 +A st, 40% 지점까지 선형 감소해 0. `decline` = +A/2 → −A/2 선형 하강.
 - **떨림**: F0에 정현파(주파수 Hz, 깊이 st) 가산.
@@ -98,13 +98,13 @@ edge-tts의 `pitch`는 SSML prosody의 Hz 단위 오프셋이다(SunHi 중립 �
 ```bash
 cd face-emotion-tts/experiments/E3_emotional-speech
 ../../.venv/bin/python scripts/tune_dev.py        # dev 격자 탐색 → results/presets_frozen.json (~15분)
-#  (prosody.py의 C_PRESETS/D_PRESETS를 presets_frozen.json 값으로 고정 — synthesize_all.py가 일치 여부를 assert)
+#  (app/tts/prosody.py의 C_PRESETS/D_PRESETS를 presets_frozen.json 값으로 고정 — synthesize_all.py가 일치 여부를 assert)
 ../../.venv/bin/python scripts/synthesize_all.py  # audio/{A,B,C,D,E_lex_B,E_lex_D,spk_ref}
 ../../.venv/bin/python scripts/analyze.py         # results/*.csv, *.json
 ../../.venv/bin/python scripts/figures.py         # figures/*.png, *.pdf
 ```
 
-추가 설치 패키지: `speechbrain 1.1.1`. 그 밖에 edge-tts 7.2.8, torch 2.14.1, torchaudio 2.11.0, funasr 1.4.16, transformers 5.19.0을 썼다. dev 튜닝 캐시(143 MB)는 `data/E3_dev_tuning_cache/`(.gitignore 대상)에 있다.
+추가 설치 패키지: `speechbrain 1.1.1`. 그 밖에 edge-tts 7.2.8(합성 당시, 지금은 7.3.1 이상 필요. `E3c_robustness/README.md` 2.1절), torch 2.14.1, torchaudio 2.11.0, funasr 1.4.16, transformers 5.19.0을 썼다. dev 튜닝 캐시(143 MB)는 `data/E3_dev_tuning_cache/`(.gitignore 대상)에 있다.
 
 ## 6. 결과
 
@@ -123,7 +123,7 @@ cd face-emotion-tts/experiments/E3_emotional-speech
 | 참고(감정 어휘 문장) | R1 감정 어휘+중립 운율 | 18 | 11.1% (0.0–27.8) | 0.051 | 33.3% (12) |
 | | R2 감정 어휘+D | 18 | 61.1% (38.9–83.3) | 0.539 | 33.3% (12) |
 
-우연 수준 = 16.7%(6감정). `acc6`(6감정 제한)은 모든 조건에서 `acc9`와 같았다. 참고: E3b에서 같은 D 프리셋으로 다시 합성했을 때 held-out 정확도는 72.9%였다. edge-tts 출력은 실행마다 −25 dB 수준으로 달라지고, 이 차이로 SER 판정 4건이 바뀌었다(`E3b_intensity/README.md` 3.5절). 따라서 ±4%p 정도는 측정 잡음으로 봐야 한다. dev와 평가 사이 차이는 C −10.4%p, D −2.1%p로 작아, 문장 수준의 과적합은 크지 않았다.
+우연 수준 = 16.7%(6감정). `acc6`(6감정 제한)은 모든 조건에서 `acc9`와 같았다. 참고: E3b에서 같은 D 프리셋으로 다시 합성했을 때 held-out 정확도는 72.9%였다. edge-tts 출력은 실행마다 −25 dB 수준으로 달라지고, 이 차이로 SER 판정 4건이 바뀌었다(`E3b_intensity/README.md` 3.5절). 따라서 ±4%p 정도는 측정 잡음으로 봐야 한다. 이후 E3c에서 같은 프리셋으로 5회 다시 합성했을 때 D 정확도는 평균 74.6%(SD 0.9, 범위 72.9–75.0%)였고, 77.1%는 run 0을 포함한 7회 중 최댓값이었다(`E3c_robustness/README.md` 3.1절). dev와 평가 사이 차이는 C −10.4%p, D −2.1%p로 작아, 문장 수준의 과적합은 크지 않았다.
 
 ### 6.2 감정별 재현율 (평가 8문장; A는 2문장) — 표 4
 
@@ -219,10 +219,10 @@ D 대 C 추정 MOS: Wilcoxon p = 1.1×10⁻⁷, 중앙값 차 −0.30. 감정별
 4. 대가: 큰 F0 이동으로 화자 임베딩 유사도가 다른 화자 수준(≈0.28)까지 떨어졌고, D는 추정 MOS가 C보다 0.3(중앙값) 낮았다.
 5. 감정 어휘만 넣은 문장(R1)은 11.1%였다. edge-tts는 텍스트 감정을 운율로 자동 반영하지 않았고, SER도 어휘가 아니라 음향에 반응했다.
 
-## 7. 재사용 모듈 `scripts/prosody.py` (Flask 키 불필요 백엔드용)
+## 7. 재사용 모듈 `app/tts/prosody.py` (Flask 키 불필요 백엔드용)
 
 ```python
-import sys; sys.path.insert(0, "experiments/E3_emotional-speech/scripts")
+import sys; sys.path.insert(0, "app/tts")   # 저장소 루트 기준
 from prosody import synthesize, synthesize_bytes, synthesize_array, apply_dsp, norm_emotion, C_PRESETS, D_PRESETS
 
 synthesize_bytes(text: str, emotion: str = "중립", mode: str = "D") -> bytes
@@ -238,25 +238,25 @@ norm_emotion(e) -> 'happy'|'sad'|'angry'|'surprise'|'fear'|'neutral'
 - `mode`: `"B"`(edge-tts 중립), `"C"`(SSML 프리셋), `"D"`(프리셋 + PSOLA 후처리, 기본값).
 - **E3b 추가(하위 호환)**: `mode="DP"`(또는 `"Dp"`)는 화자 보존형 D-psola다. edge-tts 중립 합성 뒤 모든 운율 변화를 PSOLA로 처리한다. 모든 합성 함수에 `intensity=k` 인자가 추가됐다(기본 1.0 = 위 고정 프리셋, 0 = 중립). 보간 규칙과 평가 결과는 `E3b_intensity/README.md`에 있다.
 - edge-tts는 온라인 서비스라 네트워크가 필요하다(실패 시 3회 재시도 후 예외). 이미 이벤트 루프가 도는 환경(Flask async, Jupyter)에서는 별도 스레드에서 실행한다.
-- 지연(M1 Max, 짧은 문장 1개, 1회 측정): edge-tts 약 0.9초, 후처리 약 0.1초, `synthesize_bytes(mode="D")` 전체 약 1.8초(첫 호출, librosa 로딩 포함). 체계적인 지연 측정은 E4 담당.
+- 지연(M1 Max, 짧은 문장 1개, 1회 측정): edge-tts 약 0.9초, 후처리 약 0.1초, `synthesize_bytes(mode="D")` 전체 약 1.8초(첫 호출, librosa 로딩 포함). 체계적인 지연 측정은 E4에 있다.
 - 출력은 항상 WAV다. 문장 병합 등에 mp3가 필요하면 호출 측에서 pydub로 변환한다.
 - 의존성: `edge-tts`, `praat-parselmouth`, `numpy`, `scipy`, `soundfile`, `librosa`.
 
-## 8. 그림과 캡션 초안
+## 8. 그림
 
-그림 안 글자는 코디네이터 지시에 따라 모두 영문이다(제목 없음, 160 mm 또는 76 mm 폭, 흑백 구분용 해칭·명도 사용). 조건 표기는 그림에서 A: Speed only, B: Neutral, C: Preset, D: Preset+DSP, R1/R2이다.
+그림 안 글자는 학회 그림 규정에 맞춰 모두 영문이다(제목 없음, 160 mm 또는 76 mm 폭, 흑백 구분용 해칭·명도 사용). 조건 표기는 그림에서 A: Speed only, B: Neutral, C: Preset, D: Preset+DSP, R1/R2이다.
 
-| 파일 | 폭 | 캡션 초안 |
+| 파일 | 폭 | 내용 |
 |---|---|---|
-| `figures/fig_e3_confusion.{png,pdf}` | 160 mm | `<그림 n> 조건별 음성 감정 인식(emotion2vec) 혼동행렬: (a) 속도만 조절(기존 구현, 2문장), (b) 중립 합성(통제), (c) 운율 프리셋, (d) 프리셋+신호처리 후처리. (b)~(d)는 튜닝에 쓰지 않은 8문장 결과이며 칸의 수는 음성 개수(정확도: (a) 8.3%, n=12; (b) 16.7%, (c) 56.3%, (d) 77.1%, 각 n=48)` / `(Fig. n Confusion matrices of speech emotion recognition (emotion2vec) per condition: (a) speed only (original implementation, 2 sentences), (b) neutral synthesis (control), (c) prosody preset, (d) preset + DSP post-processing; (b)–(d) on 8 held-out sentences; accuracy 8.3%, 16.7%, 56.3%, 77.1%)` |
-| `figures/fig_e3_ser_accuracy.{png,pdf}` | 76 mm | `<그림 n> 조건별 음성 감정 인식 정확도와 문장 단위 부트스트랩 95% 신뢰구간 (점선: 우연 수준 1/6; R1·R2는 감정 어휘 문장 참고 조건)` / `(Fig. n SER accuracy per condition with sentence-level bootstrap 95% CIs; dashed line: chance 1/6; R1/R2: emotionally worded reference sentences)` |
-| `figures/fig_e3_acoustic.{png,pdf}` | 160 mm | `<그림 n> 감정·조건별 음향 특징: (a) 중립 대비 평균 F0 변화(반음), (b) F0 표준편차(반음), (c) 중립 대비 발화 속도 변화(%), (d) 중립 대비 평균 강도 변화(dB). 막대는 평균, 오차 막대는 표준편차. 기준 중립은 같은 조건의 중립(D는 후처리된 중립). 평가 8문장(속도만 조건은 2문장)` / `(Fig. n Acoustic features by emotion and condition: (a) mean F0 change, (b) F0 SD, (c) speech-rate change, (d) intensity change relative to neutral; bars = mean, error bars = SD)` |
-| `figures/fig_e3_f0_contours.{png,pdf}` | 160 mm | `<그림 n> 문장 S02("깊은 숲속 오두막집에서 …")의 감정별 F0 궤적: 중립 합성(점선), 운율 프리셋(파선), 프리셋+후처리(실선). 표시용으로 옥타브 오류(310 ms 이동 중앙값에서 6반음 초과)와 50 ms 미만 고립 유성 구간을 제거함` / `(Fig. n F0 contours of sentence S02 per emotion: neutral (dotted), preset (dashed), preset + DSP (solid); octave-jump frames (>6 st from a 310-ms running median) and voiced runs <50 ms removed for display)` |
-| `figures/fig_e3_speaker_quality.{png,pdf}` | 160 mm | `<그림 n> 운율 제어의 대가: (a) 같은 조건·같은 문장 중립 음성 대비 화자 임베딩(ECAPA-TDNN) 코사인 유사도(점선: 같은 화자·다른 문장 기준, 파선: 다른 화자 기준), (b) SQUIM 추정 MOS` / `(Fig. n Costs of prosody control: (a) speaker-embedding (ECAPA-TDNN) cosine similarity to the same-condition neutral utterance (dotted: same speaker, different sentence; dashed: different speaker), (b) SQUIM-estimated MOS)` |
+| `figures/fig_e3_confusion.{png,pdf}` | 160 mm | 조건 A–D의 SER 혼동행렬(6.2절) |
+| `figures/fig_e3_ser_accuracy.{png,pdf}` | 76 mm | 조건별 SER 정확도와 95% CI, 우연 수준 선(표 3) |
+| `figures/fig_e3_acoustic.{png,pdf}` | 160 mm | 감정·조건별 ΔF0, F0 SD, Δ속도, Δ강도(표 6) |
+| `figures/fig_e3_f0_contours.{png,pdf}` | 160 mm | S02의 감정별 F0 궤적(B·C·D). 표시용으로 옥타브 오류와 50 ms 미만 고립 유성 구간을 뺐다 |
+| `figures/fig_e3_speaker_quality.{png,pdf}` | 160 mm | 화자 임베딩 유사도(표 7)와 SQUIM 추정 MOS(표 8) |
 
 ## 9. 결과 파일
 
-- `results/presets_frozen.json`: 고정 프리셋(=prosody.py). `results/tuning_C_grid.csv`, `tuning_D_grid.csv`, `tune_dev.log`: 2차(최종) dev 탐색. `results/tuning_round1/`: 1차 탐색 기록.
+- `results/presets_frozen.json`: 고정 프리셋(= `app/tts/prosody.py`). `results/tuning_C_grid.csv`, `tuning_D_grid.csv`, `tune_dev.log`: 2차(최종) dev 탐색. `results/tuning_round1/`: 1차 탐색 기록.
 - `results/per_file.csv`: 파일별 음향 특징, SER 원 확률(9클래스), 보조 SER, SQUIM, 화자 유사도, 중립 대비 변화량. `per_file_raw.pkl`은 임베딩을 포함한 캐시.
 - `results/ser_summary.csv`, `ser_recall_by_emotion.csv`, `confusion_matrices.json`, `stat_tests.csv`.
 - `results/acoustic_summary.csv`, `kruskal_wallis.csv`.
@@ -265,7 +265,7 @@ norm_emotion(e) -> 'happy'|'sad'|'angry'|'surprise'|'fear'|'neutral'
 
 ## 10. 한계
 
-1. **사람 청취 평가가 없다.** 감정 전달은 SER 한 모델(emotion2vec_plus_large)로만 대리 측정했다. 프리셋 크기도 같은 모델로 골랐기 때문에, 문장은 held-out이지만 **모델 수준에서는 이 SER에 맞춰진 것**이다. 독립적인 보조 SER(wav2vec2-SUPERB-ER, 영어 IEMOCAP 4클래스)에서의 개선은 작았다(B 25.0 → C 34.4 → D 40.6%, 우연 25%). 따라서 77.1%를 '사람이 느끼는 감정 전달률'로 해석하면 안 된다.
+1. **사람 청취 평가가 없다**(후속으로 진행 예정). 감정 전달은 SER 한 모델(emotion2vec_plus_large)로만 대리 측정했다. 프리셋 크기도 같은 모델로 골랐기 때문에, 문장은 held-out이지만 **모델 수준에서는 이 SER에 맞춰진 것**이다. 독립적인 보조 SER(wav2vec2-SUPERB-ER, 영어 IEMOCAP 4클래스)에서의 개선은 작았다(B 25.0 → C 34.4 → D 40.6%, 우연 25%). 따라서 77.1%를 '사람이 느끼는 감정 전달률'로 해석하면 안 된다.
 2. emotion2vec 출력은 거의 one-hot(최대 확률 ≈ 1.0)으로 과신한다. SunHi 기본 음성 자체도 dev 문장 일부에서 '행복'으로 분류됐다(음성 설명 "Friendly, Positive").
 3. 튜닝은 SER 마진만 최적화했고 자연성·화자 유지 제약은 넣지 않았다. 그래서 슬픔 −40% 속도, 놀람 +90 Hz, 분노 F0 범위 2배처럼 격자 경계의 강한 조작이 선택됐고, 화자 유사도와 추정 MOS가 떨어졌다. 실서비스에서는 강도를 낮추는 쪽이 적절할 수 있다(정확도–자연성 절충).
 4. 화자 유사도는 ECAPA 임베딩 기준이다. ECAPA는 F0 이동에 민감하므로 '사람이 다른 화자로 지각한다'는 뜻은 아니다. 다만 ±6 반음 이동은 지각적으로도 음색 변화가 크다.

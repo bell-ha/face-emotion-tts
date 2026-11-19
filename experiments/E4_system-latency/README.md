@@ -1,6 +1,6 @@
 # E4. 시스템 구현과 단계별 지연 측정
 
-> **2026-11-19 갱신 메모.** 이후 E5 개선안이 앱에 반영되었다. 안정화는 히스테리시스(δ=0.5, HSEmotion 선택 시 합의 게이트 추가), 문장 태깅은 `/set_emotion_probs` 확률 요약 기반 질량 태깅(중립 가중치 CNN 0.25, HSEmotion 0.90), CNN 호출은 `model(x, training=False)`이다. 테스트는 63개다(새 `app/face/emotion_core.py`, `app/tests/test_mass.py`, `test_e5_equivalence.py`). 아래 지연 측정과 "안정화 로직 그대로", "pytest 30개" 서술은 **바뀌기 전 코드** 기준이다. 질량 태깅의 판정 계산은 버퍼 3,000개(10분)에서 중앙값 0.46 ms, p95 0.90 ms였다(300회, 2026-11-19). 현재 코드로 같은 프로토콜을 다시 잰 결과는 아래 **"2026-11-19 재측정(현재 코드)"** 절에 있다.
+> **측정 2회.** 지연은 2026-10-12(초기 코드)와 2026-11-19(현재 코드, E5 개선안 반영 후) 두 번 쟀다. "측정 환경과 절차"부터 "해석"까지는 2026-10-12 값이고, 현재 코드 값은 "2026-11-19 재측정(현재 코드)" 절에 있다. 현재 코드의 안정화는 히스테리시스(δ=0.5, HSEmotion 선택 시 합의 게이트 추가), 문장 태깅은 `/set_emotion_probs` 확률 요약 기반 질량 태깅(중립 가중치 CNN 0.25, HSEmotion 0.90), CNN 호출은 `model(x, training=False)`이다. 질량 태깅의 판정 계산은 버퍼 3,000개(10분)에서 중앙값 0.46 ms, p95 0.90 ms였다(300회, 2026-11-19).
 
 ## 목적
 
@@ -11,13 +11,13 @@
 
 | 항목 | 내용 |
 |---|---|
-| TTS 백엔드 (`app/tts/backends.py`) | `TTS_BACKEND=auto`면 `OPENAI_API_KEY` 유무로 고른다. **openai**: gpt-4o-mini-tts에 감정 지시문을 `instructions`로, `speed`를 함께 전달(졸업논문 구현에서 빠져 있던 부분을 고침). **edge**(무료 온라인 TTS + 로컬 운율 후처리): edge-tts `ko-KR-SunHiNeural` + E3 `prosody.py`의 프리셋(rate/pitch/volume)과 parselmouth PSOLA 후처리. 모드 `FACEVOX_PROSODY_MODE=D`(기본)·`DP`·`C`, 감정 강도 k(요청 `intensity`, 0–1.5, 기본 1.0; 웹 UI 슬라이더). E3 모듈이 없으면 rate/pitch/volume 프리셋만 쓴다. |
-| 서버 (`app/tts/app.py`) | 키 없이 시작 가능. 기존 엔드포인트와 요청·응답 형식 유지. 키가 없으면 gpt-4o-mini 문장부호 연출 단계를 건너뜀. `/tts` 응답 헤더 `X-STAGE-Timing`에 단계별 시간(JSON)을 넣고, `/debug/backend`를 추가. |
+| TTS 백엔드 (`app/tts/backends.py`) | `TTS_BACKEND=auto`면 `OPENAI_API_KEY` 유무로 고른다. **openai**: gpt-4o-mini-tts에 감정 지시문을 `instructions`로, `speed`를 함께 전달(졸업논문 구현에서 빠져 있던 부분을 고침). **edge**(무료 온라인 TTS + 로컬 운율 후처리): edge-tts `ko-KR-SunHiNeural` + E3 `prosody.py`의 프리셋(rate/pitch/volume)과 parselmouth PSOLA 후처리. 모드 `FACEVOX_PROSODY_MODE=D`(기본)·`DP`·`C`, 감정 강도 k(요청 `intensity`, 0–1.5, 기본 1.0; 웹 UI 슬라이더). E3 모듈이 없으면 rate/pitch/volume 프리셋만 쓴다. edge-tts는 7.3.1 이상이 필요하다(7.2.8은 2026-11부터 인증 실패 403). |
+| 서버 (`app/tts/app.py`) | 키 없이 시작 가능. 기존 엔드포인트와 요청·응답 형식 유지. 키가 없으면 gpt-4o-mini 문장부호 연출 단계를 건너뜀. `/tts` 응답 헤더 `X-STAGE-Timing`에 단계별 시간(JSON)을 넣고, `/debug/backend`를 추가. 현재는 `/set_emotion_probs`(0.2초 확률 요약)를 받아 `_pick_dominant_mass`로 문장 태그를 정하고, 요약이 없으면 졸업논문의 지속 시간 규칙(`_pick_dominant_ko`)으로 폴백한다(E5). |
 | 웹 UI (`app/tts/templates/index.html`) | 새로 작성(원본 없음). 창작 도구로 구성: 대본 입력, 문장 끝 자동 연출 태그, 감정 강도 k 슬라이더, 한/영 전환(`?lang=en`), 현재 표정·최근 20초 타임라인, 연출 미리보기 칩, 기본 감정, 음성 만들기·재생, 문장별 연출 계획, 이벤트 로그. 바닐라 JS. |
-| 표정 인식 (`app/face/face_emotion.py`) | 카메라 백엔드를 OS별로 선택(Windows `CAP_MSMF`, macOS `CAP_AVFOUNDATION`, 그 외 기본). `--video`(영상 파일 입력), `--realtime`, `--headless`, `--server`, `--no-send`, `--camera` 옵션 추가. 안정화 로직과 상수(EMA 0.8, 창 0.35초, 유지 100 ms, 신뢰도 0.3, 전송 간격 0.2초)는 그대로. |
-| 테스트 (`app/tests/`) | pytest 30개: 태그 파서 6, 지배 감정 선택(합성 이벤트 스트림) 9, Flask 엔드포인트(합성은 mock, 강도 k 전달 포함) 12, 백엔드 선택·`instructions` 전달 3. **30개 모두 통과**(`python -m pytest tests -q`). |
+| 표정 인식 (`app/face/face_emotion.py`) | 카메라 백엔드를 OS별로 선택(Windows `CAP_MSMF`, macOS `CAP_AVFOUNDATION`, 그 외 기본). `--video`(영상 파일 입력), `--realtime`, `--headless`, `--server`, `--no-send`, `--camera` 옵션 추가. 안정화: 현재는 E5의 hyst(CNN)·gate_hyst(HSEmotion), δ=0.5(`app/face/emotion_core.py`의 `Stabilizer`), `--classifier cnn|hsemotion`, `--rule`, `--delta` 옵션, 0.2초 확률 요약 전송(`ProbSummary`), CNN 직접 호출. 상수(EMA 0.8, 창 0.35초, 유지 100 ms, 신뢰도 0.3, 전송 간격 0.2초)는 그대로. (2026-10-12 측정 때는 졸업논문 안정화 로직 그대로였다. 지금은 `--rule thesis`로 고를 수 있다.) |
+| 테스트 (`app/tests/`) | pytest 63개: 태그 파서 6, 지속 시간 방식 지배 감정(합성 이벤트 스트림) 9, Flask 엔드포인트(합성은 mock, 강도 k 전달 포함) 12, 백엔드 선택·`instructions` 전달 3, 확률 질량 태깅 6(`test_mass.py`), E5 참조 구현 동등성 27(`test_e5_equivalence.py`). 63개 모두 통과(`cd app && python -m pytest tests -q`). (2026-10-12 측정 때는 앞의 네 파일 30개) |
 
-`face_emotion.py`는 사용자 얼굴 사진 4장(중립·행복·슬픔·놀람)을 각 2초씩 이어 붙인 영상으로 `--video --realtime` 모드를 확인했다. 서버에 Neutral → Happy → Sad → Surprise 4개 전환이 전송되었다(동작 확인용이며 정확도 평가는 E1·E2).
+`face_emotion.py`는 제1저자의 표정 사진 4장(중립·행복·슬픔·놀람)을 각 2초씩 이어 붙인 영상으로 `--video --realtime` 모드를 확인했다. 서버에 Neutral → Happy → Sad → Surprise 4개 전환이 전송되었다(동작 확인용이며 정확도 평가는 E1·E2).
 
 ## 측정 환경과 절차
 
@@ -34,9 +34,9 @@
 - 서버 기동 직후 첫 합성 1회(콜드 스타트)와 예열 3회는 통계에서 뺐다. 콜드 스타트는 D 2578 ms(첫 MP3 디코딩, 즉 librosa 초기화가 1839 ms), Dp 2094 ms였다.
 - 단계 정의(서버 내부 `time.perf_counter`): **edge-tts 네트워크** = edge-tts 요청부터 MP3 수신 완료까지(인터넷 왕복 + Microsoft 서버 합성), **MP3 디코딩** = librosa로 24 kHz 파형 변환, **DSP** = parselmouth PSOLA 운율 후처리(F0·템포) + 고역 기울기·이득·기식 잡음, **WAV 인코딩**, **MP3 내보내기** = pydub 병합·MP3 인코딩. **왕복** = 클라이언트가 요청을 보내고 오디오를 모두 받을 때까지.
 - 난수 시드 42. 실패한 요청은 0건.
-- 이전 측정(2026-10-12 01:20, E3 프리셋 고정 전)은 `results/run_2026-10-12_0120/`에 기록으로만 남겼다. 논문에는 아래 값을 쓴다.
+- 이 절과 아래 "결과"는 2026-10-12 02:35 측정(초기 코드)이다. 현재 코드로 다시 잰 값은 "2026-11-19 재측정(현재 코드)" 절에 있다. 그보다 앞선 측정(2026-10-12 01:20, E3 프리셋 고정 전)은 `results/run_2026-10-12_0120/`에 기록으로만 남겼다.
 
-## 결과
+## 결과 (2026-10-12, 초기 코드)
 
 ### 표 1. 표정 이벤트 경로 HTTP 왕복 (ms)
 
@@ -45,7 +45,7 @@
 | `/set_emotion` | 300 | 2.81 | 2.21 | 4.80 | 3.20 | 29.6 |
 | `/emotion/resolve_one` (버퍼 2000개) | 300 | 1.79 | 1.65 | 2.72 | 0.49 | 5.0 |
 
-`/set_emotion`은 300회 중 10여 회가 10–30 ms로 튀었다(그림 B의 ×). 같은 컴퓨터 안의 요청이라 원인은 OS 스케줄링·Flask 개발 서버로 추정되며, 확인하지는 않았다.
+`/set_emotion`은 300회 중 10여 회가 10–30 ms로 튀었다(`figures/latency_http`의 ×). 같은 컴퓨터 안의 요청이라 원인은 OS 스케줄링·Flask 개발 서버로 추정되며, 확인하지는 않았다.
 
 ### 표 2. 문장 하나 합성, 단계별 시간 (ms, 각 n = 30)
 
@@ -72,7 +72,7 @@ RTF = 왕복 시간 / 생성된 음성 길이. Dp의 WAV 인코딩(0.4–1.1 ms)
 
 ### 해석
 
-- 문장 끝에서 태그를 붙이는 실시간 경로(`/set_emotion`, `/emotion/resolve_one`)는 같은 컴퓨터 안에서 p95 4.8 ms 이하로, 타이핑 흐름을 방해하지 않는다. 웹 UI 최종 캡처에서 브라우저가 잰 판정 지연(fetch 포함)은 문장 10개(영문·국문 UI 각 5개)에서 2.2–15.1 ms였다(이벤트 로그 표시값, 참고용).
+- 문장 끝에서 태그를 붙이는 실시간 경로(`/set_emotion`, `/emotion/resolve_one`)는 같은 컴퓨터 안에서 p95 4.8 ms 이하로, 타이핑 흐름을 방해하지 않는다. 2026-10-12 웹 UI 캡처에서 브라우저가 잰 판정 지연(fetch 포함)은 문장 10개(영문·국문 UI 각 5개)에서 2.2–15.1 ms였다(이벤트 로그 표시값, 참고용).
 - 합성 시간의 대부분(63–77%)은 edge-tts 네트워크 구간이다. 로컬 운율 후처리(DSP)는 문장당 40–156 ms로 작다.
 - 5문장(약 23초 분량) 대본은 평균 2.5초, p95 2.7초 안에 들을 수 있다.
 
@@ -84,14 +84,14 @@ E5 개선안(확률 질량 태깅, 히스테리시스)이 반영된 현재 `app/
 
 - **측정 시각(KST)**: D 모드 2026-11-19 16:36:45–16:41:37. 단계별 시작은 HTTP 16:36:50, 문장 하나 16:36:55, 여러 문장 16:38:31이다. Dp 모드 문장 하나 합성은 16:41:43–16:43:13에 쟀다.
 - **기기·회선**: 기존과 같은 Apple M1 Max(MacBookPro18,2), macOS 15.7, Python 3.11.14이다. 기본 경로는 Wi-Fi(en0)였다. 기존 측정(2026-10-12 02:35, "가정용 인터넷")과 같은 회선·같은 AP인지는 기록이 없어 확인하지 못했다.
-- **함께 돌던 작업**: 이 측정을 맡은 쪽에서 함께 돌린 작업은 없었다. 측정 직전(16:36)에 E3c 분석 프로세스가 끝났고, 다른 Python·ffmpeg 프로세스가 없음을 확인한 뒤 시작했다. Word 등 다른 작업도 하지 않았다. 상주 앱(VS Code 등)은 켜져 있었다. 다만 같은 저장소에 다른 작업이 16:29에 만든 문서(`docs/research/novelty-search-log.md`, 이후 수정 없음)가 있다. 그 작업의 웹 검색 같은 네트워크 사용이 측정 시간대(16:36–16:43)에 있었는지는 확인하지 못했다.
+- **함께 돌던 작업**: 측정 중 다른 계산 작업은 없었고, 측정 시간대의 네트워크 사용은 통제하지 않았다. 측정 직전(16:36)에 E3c 분석 프로세스가 끝났고, 다른 Python·ffmpeg 프로세스가 없음을 확인한 뒤 시작했다. 상주 앱(VS Code 등)은 켜져 있었다.
 - **프로토콜**: 기존 `latency.py`와 같다. 이벤트 왕복 각 300회, 문장 길이별 30회, 1·3·5문장 각 30회, D 모드 k = 1이다. 콜드 스타트 1회와 예열 3회는 통계에서 뺐다. Dp 문장 하나 합성은 별도 서버 기동으로 쟀다. 시드는 42다.
   - **추가 1**: `/set_emotion_probs` 왕복 300회. 확률 요약 버퍼를 최대치(3,000개 = 0.2 s × 10분)로 채운 상태에서 쟀다. 요약은 7클래스 Dirichlet 난수, 프레임 수 3–6이다.
   - **추가 2**: 확률 요약이 쌓인 상태의 `/emotion/resolve_one`(질량 방식, w_neutral = 0.25) 왕복 300회. 판정 구간은 기존과 같은 2–10초다.
   - 기존 항목 `/emotion/resolve_one`은 확률 요약을 넣기 **전**에 쟀다. 즉 구버전 클라이언트용 지속 시간 방식이며, 기존 측정과 같은 조건이다.
-- **스크립트**: `scripts/latency_rerun.py`(측정), `scripts/analyze_rerun.py`(요약·비교). 기존 `latency.py`를 고치지 않고 따로 만든 이유는 두 가지다.
-  1. 현재 서버는 단계 시간을 `X-STAGE-Timing` 헤더로 준다. 기존 스크립트가 읽는 `X-FaceVox-Timing`으로는 단계 시간이 비어 나온다. 새 스크립트는 둘 다 읽는다.
-  2. `.venv`의 edge-tts 7.2.8은 2026-11-19 현재 Microsoft 서버가 403으로 거부한다. 그래서 요청 본문은 같고 인증 토큰만 바뀐 edge-tts 7.3.1(`data/pylib_edge_tts_7.3.1/`)을 서버 프로세스의 `PYTHONPATH` 앞에 두었다(자세한 내용은 `experiments/E3_emotional-speech/E3c_robustness/README.md` 2.1절).
+- **스크립트**: `scripts/latency_rerun.py`(측정), `scripts/analyze_rerun.py`(요약·비교). `latency.py`와 따로 만든 이유는 두 가지다.
+  1. 현재 서버는 단계 시간을 `X-STAGE-Timing` 헤더로 준다. 측정 당시 `latency.py`는 `X-FaceVox-Timing`만 읽어 단계 시간이 비어 나왔다(지금은 두 헤더를 모두 읽도록 고쳤다). 새 스크립트는 처음부터 둘 다 읽고, 확률 요약 경로 측정과 실패 시 재시도를 더했다.
+  2. 측정 당시 `.venv`의 edge-tts는 7.2.8이었고, 2026-11-19 현재 Microsoft 서버가 403으로 거부했다. 그래서 요청 본문은 같고 인증 토큰만 바뀐 edge-tts 7.3.1(`data/pylib_edge_tts_7.3.1/`)을 서버 프로세스의 `PYTHONPATH` 앞에 두었다(자세한 내용은 `experiments/E3_emotional-speech/E3c_robustness/README.md` 2.1절). 현재 `.venv`는 7.3.1이고 `app/tts/requirements.txt`는 7.3.1 이상을 요구한다.
 - 운율 프리셋은 E3 고정값과 같다(`C_PRESETS`·`D_PRESETS`가 `presets_frozen.json`과 일치). `prosody.py`의 MD5는 `58a5ca3e…`로 기존 표기(`7ff6b7e9…`)와 다르다. 폴더 이동(`4ff3258`) 때 두 줄이 바뀌었기 때문이며, 프리셋 값 변경은 아니다.
 - **실패**: 실패한 요청은 0건이었다(재시도 0회, HTTP 200이 아닌 응답 0건).
 - **콜드 스타트**: D 2075 ms(첫 MP3 디코딩 1163 ms), Dp 1893 ms(디코딩 1160 ms)였다.
@@ -136,42 +136,70 @@ WAV 인코딩(D)은 0.4–1.1 ms로 기존과 같았다. 왕복 중 edge-tts 네
 - **로컬 처리는 그대로이거나 조금 줄었다.** DSP는 문장당 −5 ~ −14 ms(5문장 합계 −49 ms)였다. Mann–Whitney p < 0.05인 것은 D 짧음(0.025), Dp 중간(0.001), Dp 긺(0.003)이었고, 나머지는 0.07–0.13이었다. MP3 내보내기는 −12 ~ −31 ms였다. 따라서 **E5 코드 변경은 합성 경로의 지연을 늘리지 않았다.** 합성 경로(`/tts`, 백엔드, `prosody.py`)는 E5에서 바뀌지 않았고, 이 결과와도 맞는다.
 - 네트워크 증가의 원인은 나눌 수 없다. 측정 시각(02:35 대 16:37), 회선 상태, Microsoft 서버 부하, edge-tts 버전(7.2.8 → 7.3.1, 새 인증 토큰 생성)이 모두 바뀌었다. 기존 한계에 적은 대로, edge-tts 구간은 회차·시점에 따라 수백 ms 단위로 달라진다.
 - 실시간 경로의 결론은 그대로다. 문장 끝 태깅(질량 방식 포함)은 로컬 왕복 p95 2.0 ms 이하로 타이핑을 방해하지 않는다. 합성은 이번 측정에서도 모든 조건에서 음성 길이보다 빨리 끝났다(RTF 평균 0.14–0.35, 최대 0.74). 5문장(약 23초 분량) 대본은 평균 3.4초, p95 4.0초 안에 들을 수 있었다.
-- 원고에는 기존 값(02:35)과 이번 값(16:37)을 함께 쓰거나, "edge-tts 네트워크 구간이 측정 회차에 따라 문장당 평균 0.35–0.93초로 달라졌다"처럼 범위로 쓰는 것이 안전하다.
+- 두 측정을 합치면 edge-tts 네트워크 구간의 문장당 평균은 측정 회차에 따라 0.35–0.93초였다. 어느 한 회차 값만으로 합성 지연을 대표하기 어렵다.
 
 재측정 파일: `results/run_2026-11-19/`의 `raw_fast.csv`(4단계, `stage` 열), `raw_synth_sentence.csv`, `raw_multi_sentence.csv`(`attempts` 열 = 시도 횟수), `dp_single/`, `env.json`(시각·환경·MD5·실패 수·콜드 스타트), `summary.csv`, `comparison.csv`(기존 대비 평균·중앙값·p95 차이, Mann–Whitney p), `summary.json`(네트워크 비중, 판정 태그 분포, 재시도 수), `run_log.txt`, `run_log_dp.txt`, `server_log.txt`.
 
-## 그림 목록과 캡션 초안
+## 그림
 
-학회 그림 규정(`docs/plan/experiment-plan.md`)에 따라 그림 안 글자는 모두 영문이고, 그림 안에 제목은 없다(패널 기호 (a)(b)만). 글꼴은 Arial, 인쇄 크기 7–9 pt, 흑백에서도 구분되도록 명도·해칭·마커를 썼다.
+그림 안 글자는 모두 영문이고 그림 안에 제목은 없다(패널 기호 (a)(b)만). 글꼴은 Arial, 인쇄 크기 7–9 pt, 흑백에서도 구분되도록 명도·해칭·마커를 썼다.
 
-| 파일 | 크기 | 캡션 초안 |
+| 파일 | 크기 | 내용 |
 |---|---|---|
-| `figures/fig_architecture.png/.pdf/.svg` | 전체 폭 160 mm | <그림 0> STAGE 시스템 구조 (Fig. 0 STAGE system architecture). 창작자가 표정을 지으며 대본을 쓰면, 표정 인식 클라이언트가 안정화된 감정 이벤트를 서버로 보내고, 문장 끝(. ! ?)에서 그 문장 구간의 지배 감정이 태그로 붙는다. 서버는 문장마다 TTS 백엔드로 합성하고 PSOLA 운율 후처리(강도 k)를 거쳐 이어 붙인 음성을 돌려준다. 점선 상자는 외부 온라인 TTS 서비스. |
-| `figures/latency_breakdown.png/.pdf` | 전체 폭 160 mm | <그림 A> 단계별 처리 시간 (Fig. A Processing time by stage). D 모드, 강도 k = 1.0. (a) 문장 하나 합성의 단계별 평균 시간(누적 막대)과 `/tts` 왕복 중앙값(점, 막대는 5–95 백분위), 길이별 n = 30. (b) 1·3·5문장 대본의 `/tts` 종단 간 왕복 시간 분포(상자그림, n = 30)와 생성된 음성 길이 평균(□). edge-tts 구간은 인터넷 왕복을 포함한다. |
-| `figures/latency_http.png/.pdf` | 단 폭 76 mm | <그림 B> 표정 이벤트 경로의 HTTP 왕복 시간 (Fig. B HTTP round-trip time of the facial-emotion path). `/set_emotion`과 `/emotion/resolve_one`, 각 n = 300, 로컬 호스트, 가로축 로그 눈금. |
-| `figures/web_ui.png` | 전체 폭 | <그림 C> STAGE 웹 UI (Fig. C STAGE web interface). 창작자가 표정을 지으며 오디오북 대본을 쓰면 문장 끝마다 감정 태그가 자동으로 붙고, 오른쪽에 현재 표정, 최근 20초 표정 타임라인, 이벤트 로그가 표시된다. 아래 표는 문장별로 적용된 운율 파라미터이다. 표정 이벤트는 스크립트로 생성했다. |
-| `figures/web_ui_typing.png` | 전체 폭 | 그림 C의 합성 전 상태(마지막 문장 작성 중, 기본 감정 Neutral로 표시). |
-| `figures/web_ui_editor.png`, `figures/web_ui_face_panel.png` | 단 폭/전체 폭 | 그림 C의 왼쪽(대본·미리보기·연출 계획)과 오른쪽(표정 패널·로그)만 자른 그림. |
-| `figures/web_ui_ko*.png` | – | 같은 장면의 한국어 UI(기본 화면). 논문에는 영문판을 쓴다. |
+| `figures/fig_architecture.png/.pdf/.svg` | 전체 폭 160 mm | 시스템 구조도(원고 그림 1). `scripts/fig_architecture.py`로 생성 |
+| `figures/web_ui_crop.png` | – | `web_ui.png`에서 편집기·표정 패널 윗부분만 자른 것(원고 그림 2). `scripts/screenshot_ui.py`가 영문 캡처 때 함께 만든다 |
+| `figures/latency_breakdown.png/.pdf` | 전체 폭 160 mm | (a) 문장 하나 합성의 단계별 시간, (b) 1·3·5문장 종단 간 왕복 분포. 2026-10-12 측정, `scripts/analyze.py` |
+| `figures/latency_http.png/.pdf` | 단 폭 76 mm | `/set_emotion`·`/emotion/resolve_one` 왕복 시간 분포(로그 눈금). 2026-10-12 측정, `scripts/analyze.py` |
+| `figures/web_ui.png` | 전체 폭 | 영문 웹 UI 전체 캡처(합성 후). `scripts/screenshot_ui.py` |
+| `figures/web_ui_typing.png` | 전체 폭 | 합성 전 상태(마지막 문장 작성 중, 기본 감정 Neutral) |
+| `figures/web_ui_editor.png`, `figures/web_ui_face_panel.png` | – | `web_ui.png`의 왼쪽(대본·미리보기·연출 계획)과 오른쪽(표정 패널·로그) |
+| `figures/web_ui*_ko.png` | – | 같은 장면의 한국어 UI(`UI_LANG=ko`) |
+| `figures/web_ui_text.txt` | – | 캡처 때 입력된 최종 대본 |
 
-**영문 UI와 한국어 대본.** 논문용 캡처는 `/?lang=en`(영문 UI)으로 찍었다. 화면의 모든 문구, 감정 칩, 범례, 로그는 영문(Happy, Sad, Angry, Surprise, Fear, Neutral)이다. 다만 TTS가 한국어이므로 대본 텍스트는 한국어이고, 텍스트 입력창 안의 태그도 서버가 파싱하는 한국어 태그(`<행복>` 등)로 남아 있다. 미리보기·연출 계획의 칩은 같은 태그를 영문 라벨로 보여 준다. 캡션이나 본문에 "입력창의 대본과 태그는 한국어 원문"이라고 밝히면 된다.
+**영문 UI와 한국어 대본.** 영문 캡처는 `/?lang=en`으로 찍었다. 화면의 문구, 감정 칩, 범례, 로그는 영문(Happy, Sad, Angry, Surprise, Fear, Neutral)이다. TTS가 한국어이므로 대본 텍스트는 한국어이고, 입력창 안의 태그도 서버가 파싱하는 한국어 태그(`<행복>` 등)다. 미리보기·연출 계획의 칩은 같은 태그를 영문 라벨로 보여 준다.
 
-웹 UI 캡처 방법(`scripts/screenshot_ui.py`, `UI_LANG=en|ko`): headless Chromium(playwright, 1440×1080, 배율 2)으로 대본을 한 글자씩 입력했다. 각 문장을 입력하기 직전에 가짜 표정 이벤트(Happy 0.93, Surprise 0.81, Fear 0.74, Sad 0.86, Angry 0.88, Happy 0.90; 세 번째 문장 뒤에 Neutral 0.66)를 `/set_emotion`으로 보냈다. 태그는 직접 써 넣지 않았고, 문장 끝에서 `/emotion/resolve_one`이 실제로 판정한 결과이다. 마지막 문장은 문장부호 없이 작성 중인 상태로 두어 기본 감정(Neutral) 처리를 보였다. 음성은 실제 edge 백엔드로 합성했다. 입력된 최종 텍스트는 `figures/web_ui_text.txt`에 있다. 연출 계획 표의 운율 파라미터는 지연 측정과 같은 최종 E3 프리셋(D 모드, k = 1.0)이다(캡처 2026-10-12 02:40). **표정 이벤트는 실제 카메라가 아니라 스크립트가 만든 것이다. 그림 캡션에 이를 밝혀야 한다.**
+**캡처 방법**(`scripts/screenshot_ui.py`, `UI_LANG=en|ko`): headless Chromium(playwright, 1440×1080, 배율 2)으로 대본을 한 글자씩 입력했다. 각 문장을 입력하기 직전에 가짜 표정 이벤트(Happy 0.93, Surprise 0.81, Fear 0.74, Sad 0.86, Angry 0.88, Happy 0.90; 세 번째 문장 뒤에 Neutral 0.66)를 `/set_emotion`으로 보냈다. 태그는 직접 써 넣지 않았고, 문장 끝에서 `/emotion/resolve_one`이 실제로 판정한 결과다. 이 스크립트는 확률 요약(`/set_emotion_probs`)을 보내지 않으므로 현재 서버에서도 지속 시간 방식(폴백)으로 판정된다. 마지막 문장은 문장부호 없이 작성 중인 상태로 두어 기본 감정(Neutral) 처리를 보였다. 음성은 실제 edge 백엔드로 합성했다. 연출 계획 표의 운율 파라미터는 지연 측정과 같은 최종 E3 프리셋(D 모드, k = 1.0)이다(첫 캡처 2026-10-12 02:40, 2026-11-19 다시 캡처). 표정 이벤트는 실제 카메라가 아니라 스크립트가 만든 것이다.
 
 ## 파일
 
-- `scripts/latency.py`: 측정(서버를 띄우고 HTTP로 측정, 원자료 CSV 저장)
-- `scripts/analyze.py`: 요약표(`results/summary.csv`, `summary.json`)와 그림 생성
-- `scripts/screenshot_ui.py`: 웹 UI 캡처
+- `scripts/latency.py`: 2026-10-12 측정(서버를 띄우고 HTTP로 측정, 원자료 CSV 저장)
+- `scripts/analyze.py`: 2026-10-12 요약표(`results/summary.csv`, `summary.json`)와 그림 생성
+- `scripts/latency_rerun.py`: 2026-11-19 재측정(확률 요약 경로 추가, 실패 시 재시도)
+- `scripts/analyze_rerun.py`: 재측정 요약과 기존 값 비교(`results/run_2026-11-19/summary.csv`, `comparison.csv`, `summary.json`)
+- `scripts/screenshot_ui.py`: 웹 UI 캡처(playwright 필요)
 - `scripts/fig_architecture.py`: 시스템 구조도
 - `results/raw_fast.csv`, `raw_synth_sentence.csv`, `raw_multi_sentence.csv`: 원자료(D 모드)
 - `results/dp_single/`: Dp 모드 문장 하나 합성 원자료·환경
-- `results/run_2026-10-12_0120/`: 이전 측정(기록용, 논문에 쓰지 않음)
+- `results/run_2026-10-12_0120/`: E3 프리셋 고정 전 측정(기록용)
+- `results/run_2026-11-19/`: 현재 코드 재측정 원자료·요약·비교(`dp_single/` 포함)
 - `results/env.json`: 환경·콜드 스타트·문장 목록, `results/run_log.txt`, `run_log_dp.txt`, `server_log.txt`: 실행 로그
+
+## 재현
+
+저장소 루트에서 실행한다. 측정 스크립트가 서버(`app/tts/app.py`, edge 백엔드)를 직접 띄우므로 서버를 따로 켤 필요는 없다. 인터넷 연결과 edge-tts 7.3.1 이상이 필요하다(`data/pylib_edge_tts_7.3.1/`이 있으면 서버의 `PYTHONPATH` 앞에 두고, 없으면 `.venv`의 edge-tts를 쓴다).
+
+```bash
+# 현재 코드 측정 (D 모드 전체, 이어서 Dp 문장 하나 합성)
+E4_SUBDIR=run_2026-11-19 .venv/bin/python experiments/E4_system-latency/scripts/latency_rerun.py
+E4_SUBDIR=run_2026-11-19/dp_single E4_MODE=DP E4_ONLY_SINGLE=1 \
+  .venv/bin/python experiments/E4_system-latency/scripts/latency_rerun.py
+# 요약과 2026-10-12 값 비교 (results/run_2026-11-19/를 읽는다)
+.venv/bin/python experiments/E4_system-latency/scripts/analyze_rerun.py
+
+# 그림
+.venv/bin/python experiments/E4_system-latency/scripts/analyze.py            # latency_breakdown, latency_http (results/의 2026-10-12 원자료)
+.venv/bin/python experiments/E4_system-latency/scripts/fig_architecture.py   # fig_architecture
+.venv/bin/pip install playwright && .venv/bin/python -m playwright install chromium
+UI_LANG=en .venv/bin/python experiments/E4_system-latency/scripts/screenshot_ui.py   # web_ui*.png, web_ui_crop.png
+UI_LANG=ko .venv/bin/python experiments/E4_system-latency/scripts/screenshot_ui.py   # web_ui*_ko.png
+```
+
+- 위 측정 명령은 `results/run_2026-11-19/`의 기록을 덮어쓴다. 기록을 남기려면 `E4_SUBDIR`를 다른 이름으로 준다. 이때 `analyze_rerun.py`는 `run_2026-11-19`를 읽도록 고정돼 있으므로 경로를 바꿔야 한다.
+- 2026-10-12 측정은 `scripts/latency.py`로 했다(`E4_SUBDIR`를 비우면 `results/`에 바로 쓴다. Dp는 `E4_SUBDIR=dp_single E4_MODE=DP E4_ONLY_SINGLE=1`). 지금 코드에서 돌리면 확률 요약 경로는 재지 않는다.
 
 ## 한계
 
-- **edge-tts는 Microsoft의 온라인 서비스다.** "edge-tts 네트워크" 시간에는 인터넷 왕복과 원격 합성이 함께 들어 있어 둘을 나눌 수 없고, 측정 시점·회선·서버 부하에 따라 달라진다. 논문 수치는 한 번의 측정(약 5분, 02:35–02:39)이며 한 회선에서만 했다. 같은 프로토콜의 이전 측정(01:20, 프리셋 고정 전)에서는 5문장 왕복 평균이 3.0초로, 회차 간 변동이 수백 ms 수준임을 보여 준다. 로컬에서 도는 부분은 parselmouth DSP와 디코딩·인코딩·병합뿐이다.
+- **edge-tts는 Microsoft의 온라인 서비스다.** "edge-tts 네트워크" 시간에는 인터넷 왕복과 원격 합성이 함께 들어 있어 둘을 나눌 수 없고, 측정 시점·회선·서버 부하에 따라 달라진다. 측정은 2회(2026-10-12 02:35–02:39, 2026-11-19 16:36–16:43)뿐이고, 회차마다 한 회선에서만 쟀다. 같은 프로토콜의 이전 측정(01:20, 프리셋 고정 전)에서는 5문장 왕복 평균이 3.0초로, 회차 간 변동이 수백 ms 수준임을 보여 준다. 2026-11-19 재측정에서도 edge-tts 구간이 문장당 +243 ~ +429 ms 늘었다. 로컬에서 도는 부분은 parselmouth DSP와 디코딩·인코딩·병합뿐이다.
 - OpenAI 백엔드(gpt-4o-mini-tts + instructions)는 API 키가 없어 지연을 재지 못했다. 코드 경로는 mock 테스트로만 확인했다.
 - 클라이언트와 서버가 같은 컴퓨터에 있어 HTTP 왕복에는 실제 네트워크가 없다. 표정 인식(MediaPipe + CNN) 프레임 지연은 E1에서 따로 잰다.
 - 문장은 하나씩 순서대로 합성한다. 병렬 요청이나 스트리밍 재생을 쓰면 체감 대기 시간을 더 줄일 수 있지만 이번에는 구현·측정하지 않았다.

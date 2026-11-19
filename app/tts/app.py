@@ -47,7 +47,7 @@ app = Flask(__name__, template_folder=str(Path(__file__).resolve().parent / "tem
 # 예: {"t": 1723871123456, "label": "Happy", "tag": "<laugh>", "confidence": 0.82}
 EMO_HISTORY = deque(maxlen=2000)
 
-# 영문 라벨 → 한국어 6감정 (요청대로 Disgust→분노)
+# 영문 라벨 → 한국어 6감정 (Disgust→분노)
 LABEL_TO_KO = {
     "Happy": "행복",
     "Sad": "슬픔",

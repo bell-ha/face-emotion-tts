@@ -4,7 +4,7 @@ Flask 앱(app/tts/app.py, edge 백엔드 + E3 prosody D 모드)을 별도 프로
   1) /set_emotion 왕복           (N_FAST회)
   2) /emotion/resolve_one 왕복   (N_FAST회, 이벤트 버퍼 가득 찬 상태 = 2000개)
   3) 문장 하나 합성(/tts, 태그 없음) × 길이 3종 × N_SYN회
-     서버가 X-FaceVox-Timing 헤더로 단계 시간(네트워크 edge-tts / 디코딩 / DSP / 인코딩)을 돌려준다.
+     서버가 X-STAGE-Timing 헤더(이전 서버는 X-FaceVox-Timing)로 단계 시간(네트워크 edge-tts / 디코딩 / DSP / 인코딩)을 돌려준다.
   4) 다문장 /tts(태그 포함) 1·3·5문장 × N_SYN회 (종단 간)
 
 실행: .venv/bin/python experiments/E4_system-latency/scripts/latency.py
@@ -47,6 +47,11 @@ SENTENCES = {
              "역 앞 사거리에서 왼쪽으로 돌아 두 블록을 걸어가면, 오래된 빵집 옆에 작은 우체국 건물이 하나 있습니다.",
              "회의가 끝난 뒤에 우리는 다음 달 일정표를 다시 확인하고, 각자 맡은 일을 메모장에 정리해 두었습니다."],
 }
+
+
+def _timing(r):
+    """단계 시간 헤더: 현재 서버 X-STAGE-Timing, 이전 서버 X-FaceVox-Timing."""
+    return json.loads(r.headers.get("X-STAGE-Timing") or r.headers.get("X-FaceVox-Timing") or "{}")
 
 
 def free_port_ok(port):
@@ -115,7 +120,7 @@ def run_single(rows_syn):
             text = SENTENCES[L][rep % 3]
             emo = EMOS[rep % 6]
             r, dt = post("/tts", {"text": text, "emotion": emo}, timeout=60)
-            tm = json.loads(r.headers.get("X-FaceVox-Timing", "{}"))
+            tm = _timing(r)
             seg = (tm.get("segments") or [{}])[0]
             audio_sec = len(AudioSegment.from_file(BytesIO(r.content), format="mp3")) / 1000 if r.ok else None
             rows_syn.append({"length": L, "rep": rep, "emotion": emo, "chars": len(text), "status": r.status_code,
@@ -134,7 +139,7 @@ def run_multi(rows_multi):
         for n in (1, 3, 5):
             text = " ".join(pool[(rep + j) % 3] + f"<{EMOS[(rep + j) % 6]}>" for j in range(n))
             r, dt = post("/tts", {"text": text, "emotion": "중립"}, timeout=120)
-            tm = json.loads(r.headers.get("X-FaceVox-Timing", "{}"))
+            tm = _timing(r)
             segs = tm.get("segments") or []
             rows_multi.append({"n_sent": n, "rep": rep, "status": r.status_code, "client_ms": dt,
                                "server_ms": tm.get("server_total_ms"),
@@ -159,7 +164,7 @@ def main():
     try:
         # cold start: 서버 기동 직후 첫 합성 1회(librosa 초기화 포함) — 통계에서 제외
         r, dt = post("/tts", {"text": SENTENCES["short"][0], "emotion": "중립"})
-        cold = {"client_ms": dt, **json.loads(r.headers.get("X-FaceVox-Timing", "{}"))}
+        cold = {"client_ms": dt, **_timing(r)}
         print(f"cold first /tts: {dt:.0f} ms")
         for i in range(3):   # 예열 — 통계에서 제외
             post("/tts", {"text": SENTENCES["short"][1], "emotion": EMOS[i]})

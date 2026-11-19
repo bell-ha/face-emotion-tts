@@ -38,7 +38,7 @@ python face_emotion.py --classifier hsemotion                  # HSEmotion ONNX 
 ```
 
 - 미리보기 창에서 `e`: 현재 안정 라벨 강제 전송, `q`: 종료
-- 서버 주소는 `--server` → 환경변수 `ORPHEUS_URL` → `127.0.0.1:5000` 등 후보 순으로 정한다.
+- 서버 주소는 `--server` → 환경변수 `ORPHEUS_URL`(옛 이름에서 온 변수명) → `127.0.0.1:5000` 등 후보 순으로 정한다.
 - 카메라 백엔드는 OS에 맞게 자동 선택한다: Windows `CAP_MSMF`, macOS `CAP_AVFOUNDATION`, 그 외 OpenCV 기본. 지정 백엔드가 실패하면 기본 백엔드로 다시 연다.
 - macOS에서는 터미널(또는 IDE)에 카메라 권한이 필요하다: 시스템 설정 → 개인정보 보호 및 보안 → 카메라.
 

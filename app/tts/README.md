@@ -8,6 +8,7 @@ Flask 서버. 얼굴 감정 이벤트를 받아 두고, 문장별 감정 태그�
 |---|---|
 | `app.py` | 라우트, 감정 이벤트·확률 요약 버퍼, 지배 감정 판정(`_pick_dominant_mass`, 폴백 `_pick_dominant_ko`), 태그 파서(`parse_tagged_script`), 문장 병합 |
 | `backends.py` | TTS 백엔드(`openai`, `edge`)와 선택 로직 |
+| `prosody.py` | edge 백엔드의 E3 운율 프리셋과 PSOLA 후처리 |
 | `templates/index.html` | 웹 UI (바닐라 JS, 빌드 불필요) |
 | `requirements.txt` | 의존 패키지 |
 
@@ -19,7 +20,7 @@ Flask 서버. 얼굴 감정 이벤트를 받아 두고, 문장별 감정 태그�
   - `app/tts/prosody.py`가 있으면 그 프리셋(rate/pitch/volume)과 parselmouth PSOLA 후처리(F0 범위·이동·윤곽, 템포, 스펙트럼 기울기, 이득)를 쓴다(`FACEVOX_PROSODY_MODE=D`, 기본 = 논문 주 조건). `C`는 프리셋만, `DP`(D-psola)는 중립 edge-tts 위에 PSOLA로 모든 운율 변화를 준다(화자 보존형).
   - 감정 강도 k: 요청 JSON의 `intensity`(0–1.5, 기본 1.0 = 고정 프리셋, 0 = 중립). 웹 UI 슬라이더로 조절. 기본값은 `FACEVOX_INTENSITY`. OpenAI 백엔드에서는 쓰지 않는다.
   - 없으면 `backends.py`의 `EDGE_PRESETS`(rate/pitch/volume)만 쓴다.
-  - edge-tts는 Microsoft 온라인 서비스다. 키는 필요 없지만 인터넷 연결이 필요하다.
+  - edge-tts는 Microsoft 온라인 서비스다. 키는 필요 없지만 인터넷 연결이 필요하다. edge-tts 7.3.1 이상이 필요하다(7.2.8은 2026-11부터 인증 실패 403).
 
 `TTS_BACKEND=openai|edge|auto`로 강제할 수 있다. 현재 상태는 `GET /debug/backend`로 확인한다.
 

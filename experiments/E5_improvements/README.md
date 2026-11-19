@@ -119,56 +119,36 @@ dev 선택: 원시 6감정 프레임 정확도 `va_mtl` 65.4% > `best_afew` 64.0
 - HSEmotion 안정화(gate_hyst δ=0.5): 전환 1.07→0.50회/s(−53%, 차 −0.57 [−0.64, −0.49]), 클립 정확도 차 −0.6%p [−2.2, +1.1](McNemar p=0.61), 지연 중앙값 +133 ms(IQR 133–167 ms), 도달률 98.3%.
 - **분류기 교체와 방법 개선은 서로 더해진다.** 태그 정확도 37.2%(원 시스템) → 56.3%(방법만) / 53.0%(분류기만) → 64.0%(둘 다). 다만 HSEmotion의 두려움 태그 재현율은 26%로 여전히 낮고, 중립 재현율도 48%다.
 
-## 5. 그림 목록과 캡션 초안
+## 5. 그림
 
-그림 규정: 그림 안 글자 영문, 그림 제목 없음, 흑백 구분(명도·해칭·마커), Arial, PNG 300 dpi + PDF. 범례의 "baseline" = 졸업논문 코드, "proposed" = 제안 방법(dev 선택 파라미터).
+그림 안 글자는 영문, 그림 안 제목 없음, 흑백 구분(명도·해칭·마커), Arial, PNG 300 dpi + PDF. 범례의 "baseline" = 졸업논문 코드, "proposed" = 제안 방법(dev 선택 파라미터). 모두 `scripts/e5_figures.py`로 만든다.
 
-| 파일 | 폭 | 캡션 초안 (국문 / 영문) |
+| 파일 | 폭 | 내용 |
 |---|---|---|
-| `figures/fig_e5_2x2` | 160 mm | <그림 X> 시험용 배우 20명(RAVDESS 1,040문장)에서 분류기(FER2013-CNN, HSEmotion)와 방법(기준선, 제안)에 따른 (a) 문장 태그 정확도, (b) 빈 태그 비율, (c) 초당 라벨 전환 수, (d) 클립 정확도. 오차 막대는 배우 단위 부트스트랩 95% 신뢰구간이다. 제안 방법은 클립 정확도를 유지하면서 태그 정확도를 높이고 빈 태그와 라벨 전환을 줄인다.<br>(Fig. X (a) Sentence-tag accuracy, (b) empty-tag rate, (c) label switches per second and (d) clip accuracy for each classifier and method on 20 held-out RAVDESS actors) |
-| `figures/fig_e5_tag_tradeoff` | 160 mm | <그림 X> 문장 태그 정확도와 빈 태그 비율의 관계. (a) FER2013-CNN, (b) HSEmotion. 원은 졸업논문 규칙의 conf_thresh×min_ratio 격자, 실선은 확률 질량 방식의 중립 억제 가중치(w_neutral) 변화, 별은 개발용 배우에서 고른 설정이다(시험용 배우 결과).<br>(Fig. X Sentence-tag accuracy versus empty-tag rate for the thesis rule and the probability-mass rule: (a) FER2013-CNN, (b) HSEmotion) |
-| `figures/fig_e5_confusion_cnn_vs_hse` | 160 mm | <그림 X> 시험용 배우의 RAVDESS 프레임에 대한 (a) FER2013-CNN과 (b) HSEmotion의 행 정규화 혼동행렬(원시 출력, 7클래스). CNN은 비중립 표정을 중립으로, HSEmotion은 중립 표정을 슬픔·놀람으로 보는 경향이 있다.<br>(Fig. X Row-normalized per-frame confusion matrices on held-out RAVDESS actors: (a) FER2013-CNN, (b) HSEmotion) |
-| `figures/fig_e5_tag_recall_per_class` | 76 mm | <그림 X> 감정별 문장 태그 재현율(시험용 배우). \*분노에는 혐오 문장이 포함된다(시스템 매핑 Disgust→분노). 제안 방법은 비중립 감정의 재현율을 높이지만 중립 재현율은 낮춘다.<br>(Fig. X Per-emotion sentence-tag recall on held-out actors; *Angry includes Disgust sentences) |
+| `figures/fig_e5_2x2` | 160 mm | 분류기 × 방법별 (a) 문장 태그 정확도, (b) 빈 태그 비율, (c) 초당 라벨 전환 수, (d) 클립 정확도(시험 배우, 배우 단위 부트스트랩 95% CI) |
+| `figures/fig_e5_tag_tradeoff` | 160 mm | 태그 정확도 대 빈 태그 비율: 졸업논문 규칙 격자와 w_neutral 변화, (a) CNN, (b) HSEmotion |
+| `figures/fig_e5_confusion_cnn_vs_hse` | 160 mm | 시험 배우 프레임의 행 정규화 혼동행렬(원시 출력, 7클래스), (a) CNN, (b) HSEmotion |
+| `figures/fig_e5_tag_recall_per_class` | 76 mm | 감정별 문장 태그 재현율(시험 배우, 분노에 혐오 포함) |
 
-## 6. 구현 반영 방법 (아직 소스는 고치지 않음)
+## 6. 앱 반영 내역(2026-11-19)
 
-### 6.1 `app/face/face_emotion.py`
-1. **최종 라벨 규칙 교체** (현재 `final_idx = majority_idx if majority_idx == ema_label_idx else ema_label_idx` 한 줄). 전역 `out_idx = None`, `HYST_DELTA = 0.5`, `USE_GATE = False`(CNN) / `True`(HSEmotion)를 두고:
-   ```python
-   k = int(np.argmax(prob_ema)); pe = prob_ema[0]
-   if out_idx is None:
-       out_idx = k
-   elif k != out_idx and (not USE_GATE or majority_idx == k) and pe[k] - pe[out_idx] >= HYST_DELTA:
-       out_idx = k
-   final_idx = out_idx
-   ```
-   뒤의 유지 시간·신뢰도·전송 간격 코드는 그대로 둔다.
-2. **확률 요약 전송 추가.** 루프 밖에 `sum_acc = np.zeros(7); sum_n = 0; sum_t0 = time.time()`. 얼굴이 분류된 프레임마다 `sum_acc += probs[0]; sum_n += 1`(EMA가 아니라 **원시** `probs`). 매 프레임 끝에서 `time.time() - sum_t0 >= 0.2`이면
-   `post_json(f"{ORPHEUS_URL}/set_emotion_probs", {"t0": int(sum_t0*1000), "t1": int(now*1000), "n": sum_n, "probs": (sum_acc/max(sum_n,1)).round(4).tolist(), "labels": EMOTION_LABELS})` 후 초기화(`sum_n == 0`이면 보내지 않음). 초당 5회, 요청당 약 200바이트. 기존 `/set_emotion` 이벤트(라벨 전환)는 UI 표시용으로 그대로 둔다(선택: payload에 `"probs": prob_ema[0].tolist()`를 덧붙일 수 있음).
-3. (E1 결과) `model.predict(inp, verbose=0)` → `model(inp, training=False).numpy()`로 바꾸면 CNN 지연이 약 26 ms → 4 ms.
-4. **HSEmotion으로 교체할 때:** `onnxruntime.InferenceSession("enet_b0_8_va_mtl.onnx", providers=["CPUExecutionProvider"])`, 전처리 `e5_extract.hse_preprocess`(BGR→RGB, 224×224, /255, ImageNet 정규화), 출력 앞 8개 로짓에서 `[0,2,3,4,6,7,5]` 순서로 7개를 골라 softmax(Contempt 제외) → 이후 코드는 같다. `USE_GATE=True`, 서버 `W_NEUTRAL=0.9`.
+dev에서 고른 설정(4.2절)을 앱에 반영했다. 앱 코드가 참조 구현(`scripts/e5_methods.py`)과 같은 입력에서 같은 출력을 내는지는 `app/tests/test_e5_equivalence.py`(27개: 안정화 규칙별 라벨·전송 이벤트, 0.2초 요약, 문장 태그, HSEmotion 전처리·후처리, RAVDESS 캐시가 있으면 `results/test_per_clip_*.csv`와 대조)가 확인한다. 서버 경로는 `app/tests/test_mass.py`(6개)가 확인한다. 앱 테스트 63개가 모두 통과한다(`cd app && python -m pytest tests -q`).
 
-### 6.2 `app/tts/app.py`
-1. `PROB_HISTORY = deque(maxlen=3000)`(0.2 s × 3000 = 10분) 추가.
-2. 새 라우트 `POST /set_emotion_probs`: `{"t0","t1","n","probs"}`를 받아 `(t0, t1, n, np.array(probs))`로 저장.
-3. 새 함수(`e5_methods.ProbSummaryServer.pick`과 같음):
-   ```python
-   KO6 = ['분노','두려움','행복','슬픔','놀람','중립']
-   def _pick_dominant_mass(since, until, w_neutral=W_NEUTRAL):
-       m = dict.fromkeys(KO6, 0.0)
-       for a, b, n, p in PROB_HISTORY:
-           ov = min(b, until) - max(a, since)
-           if ov > 0 and b > a:
-               for lab, v in zip(EMOTION_LABELS, p):
-                   m[LABEL_TO_KO[lab]] += (ov / (b - a)) * n * v
-       if sum(m.values()) <= 0: return ""
-       m['중립'] *= w_neutral
-       emo = max(m, key=m.get)
-       return "" if emo == '중립' else f"<{emo}>"
-   ```
-   `W_NEUTRAL = 0.25`(FER2013-CNN) / `0.9`(HSEmotion). 분류기를 바꾸면 이 값만 다시 정한다.
-4. `/emotion/resolve_one`에서 `_pick_dominant_ko(...)` 대신 `_pick_dominant_mass(since_ms, until_ms)`를 부른다. `PROB_HISTORY`가 비어 있으면(구버전 클라이언트) 기존 `_pick_dominant_ko`로 폴백한다.
-5. 시계: 기존 이벤트와 같이 클라이언트 epoch ms를 쓰므로, 지금처럼 같은 PC에서 돌리는 것을 전제로 한다.
+### 6.1 표정 클라이언트 (`app/face/face_emotion.py`, `app/face/emotion_core.py`)
+- **안정화**: `emotion_core.Stabilizer`. `--classifier cnn`(기본)이면 hyst, `--classifier hsemotion`이면 gate_hyst, 둘 다 δ=0.5(`CLASSIFIER_PRESETS`). `--rule thesis|gate|hyst|gate_hyst`와 `--delta`로 바꿀 수 있고, `thesis`는 졸업논문 규칙이다. 유지 시간·신뢰도·전송 간격 단계는 그대로다.
+- **확률 요약 전송**: `emotion_core.ProbSummary`가 0.2초마다 얼굴 프레임의 원시 확률 평균(EMA 아님)과 프레임 수를 모아 `POST /set_emotion_probs`로 보낸다(`{"t0","t1","n","probs","labels","classifier"}`). 얼굴 프레임이 없던 구간은 보내지 않는다. `/set_emotion` 이벤트는 UI 표시와 폴백용으로 그대로 보낸다.
+- **CNN 호출**: `model(x, training=False)` 직접 호출(E1, 4.1절).
+- **HSEmotion**: `emotion_core.HSEmotionClassifier`(onnxruntime CPU, `enet_b0_8_va_mtl.onnx`, 기본 경로 `data/models/hsemotion/`, `--hse-model`로 지정). 전처리 `hse_preprocess`, 후처리 `hse_logits_to_probs`(Contempt를 버리고 7개에 softmax)는 `e5_extract.py`·`e5_analyze.py`와 같다.
+
+### 6.2 서버 (`app/tts/app.py`)
+- `PROB_HISTORY`(최근 3,000개 = 0.2 s × 10분)와 `POST /set_emotion_probs`(형식 오류 400).
+- `_mass_ko`·`_pick_dominant_mass`: `e5_methods.ProbSummaryServer.pick`과 같은 계산(겹친 비율 × 프레임 수 가중 합산, Disgust→분노, 중립 질량 × w_neutral, 중립이 이기면 `""`).
+- w_neutral: 환경변수 `FACEVOX_W_NEUTRAL`이 있으면 그 값, 없으면 마지막 요약의 `classifier`로 고른다(`cnn` 0.25, `hsemotion` 0.9, 모르는 이름 0.25).
+- `/emotion/resolve_one`은 `_pick_dominant`를 부른다. 확률 요약이 한 번이라도 들어왔으면 질량 방식, 아니면(구버전 클라이언트) 졸업논문의 지속 시간 규칙 `_pick_dominant_ko(conf_thresh=0.5, min_ratio=0.4)`로 폴백한다. 현재 방식은 `GET /debug/backend`의 `tagging`(`mass`/`duration`), `classifier`, `w_neutral`로 확인한다.
+- 시각은 기존 이벤트와 같이 클라이언트 epoch ms다. 같은 PC에서 돌리는 것을 전제로 한다.
+- 지연은 E4 재측정(2026-11-19)에서 쟀다. 질량 방식 `/emotion/resolve_one` 왕복은 요약 버퍼 3,000개에서 p95 2.04 ms였다(`experiments/E4_system-latency/README.md` 표 R1).
+
+반영 전 설계안(이 절의 이전 판)과 달라진 점: 요약에 `labels`·`classifier`를 함께 받아 분류기별 w_neutral을 서버가 고른다. 안정화·요약·HSEmotion 처리를 `emotion_core.py`로 분리해 TensorFlow·카메라 없이 테스트한다.
 
 ## 7. 한계
 

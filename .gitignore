@@ -6,6 +6,7 @@
 venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # 생성된 오디오
 app/tts/tts_tmp.*
@@ -15,15 +16,18 @@ app/tts/tts_temp.*
 .DS_Store
 ~$*
 
-# 논문 폴더: 학사학위논문 최종 PDF와 안내만 공개하고(학술지 원고는 투고·심사 중이라 비공개), 원본(docx, 학번 등 메타데이터)·학교 및 학회 양식·검토 메모·서식 도구는 올리지 않는다
+# 논문 폴더: 학사학위논문 최종 PDF와 안내만 공개하고(학술지 원고는 투고 준비 중이라 비공개), 원본(docx, 학번 등 메타데이터)·학교 및 학회 양식·검토 메모·서식 도구는 올리지 않는다
 paper/1_thesis/*
 !paper/1_thesis/thesis_final_2025-11-06.pdf
 paper/templates/
 paper/2_journal-koen/*
 
-# 인수인계 메모 (읽은 뒤 삭제)
-HANDOFF.md
-
 # 실험 데이터·모델
 data/
-.venv/
+
+# 투고 준비 자료(투고 전략·일정, 원고 점검, 원고와 문장이 겹칠 수 있는 메모)는 비공개
+docs/plan/
+docs/submission/
+docs/research/*
+!docs/research/thesis-review.md
+!docs/research/thesis-citation-fixes.md

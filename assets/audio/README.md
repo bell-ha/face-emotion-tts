@@ -1,6 +1,8 @@
 # 감정별 합성 샘플
 
-`app/tts/app.py`의 감정 프리셋(음성 shimmer)으로 합성한 샘플입니다. (2025-08-23)
+`app/tts/app.py`의 감정 프리셋(OpenAI `gpt-4o-mini-tts`, 음성 shimmer)으로 합성한 샘플이다(2025-08-23).
+
+졸업논문 구현이라 감정별 `speed`와 문장부호만 반영됐고, 감정 지시문(`instructions`)은 전달되지 않았다. E3의 조건 A(`experiments/E3_emotional-speech/README.md`)가 이 샘플을 분석한 것이다.
 
 | 파일 접두어 | 문장 |
 |---|---|

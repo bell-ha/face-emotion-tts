@@ -1,10 +1,10 @@
 # 졸업논문 인용 오류 정리와 APA7 수정안
 
-작성일: 2026-10-12 · 작성: L1(agent-lit)
+작성일: 2026-10-12
 
-- 대상: `paper/1_thesis/thesis_final_2025-11-06.pdf` 본문(1~21쪽)과 「IV. 참고문헌」(22~25쪽, 18편), 별도 파일 `paper/1_thesis/references_list.docx`
+- 대상: `paper/1_thesis/thesis_final_2025-11-06.pdf` 본문(1~21쪽)과 「IV. 참고문헌」(22~25쪽, 18편), 별도 파일 `paper/1_thesis/references_list.docx`(비공개)
 - 확인 방법: 모든 참고문헌을 KCI·KoreaScience·DBpia·earticle·S-Space·Crossref·ISCA·arXiv에서 다시 찾아 권·호·쪽·저자·DOI를 대조했다. 핵심 수정(박중희, 권새봄, 이은혜, 김혜란, 리단양, 유은정, Sivaprasad, Luo)은 Crossref·KCI에서 한 번 더 직접 확인했다.
-- 형식 기준: KOEN 2026 개정 APA7 규정(`docs/submission/koen-submission-rules.md` 8장). 국문 2인은 `(홍길동 & 김철수, 2020)`, 3인 이상은 `(홍길동 외, 2020)`, 영문 3인 이상은 `(Kim et al., 2020)`.
+- 형식 기준: KOEN 2026 개정 APA7 규정. 국문 2인은 `(홍길동 & 김철수, 2020)`, 3인 이상은 `(홍길동 외, 2020)`, 영문 3인 이상은 `(Kim et al., 2020)`.
 
 ## 1. 요약
 
@@ -49,7 +49,7 @@
 
 ### 인용이 필요한데 빠진 곳 (학술지 원고에서 보충)
 
-| 위치 | 서술 | 붙일 문헌 (`docs/research/related-work.md`) |
+| 위치 | 서술 | 붙일 문헌 |
 |---|---|---|
 | 6쪽 그림 1, Tacotron 설명, 각주 10 | Tacotron 계열 구조 | Wang et al. (2017) [C1], Shen et al. (2018) [C2] |
 | 6쪽 GST 설명 | Global Style Tokens | Wang et al. (2018) [C3] |

@@ -1,6 +1,6 @@
 # E3b. 감정 강도(intensity) 제어와 화자 보존형 변형(D-psola)
 
-작성: agent-tts, 2026-10-12. 공통 규칙은 `docs/plan/experiment-plan.md`와 `../README.md`(E3)를 따른다. 모든 수치는 실제로 돌린 결과다(시드 42).
+작성일: 2026-10-12. 공통 규칙은 `../README.md`(E3)를 따른다. 모든 수치는 실제로 돌린 결과다(시드 42).
 
 ## 1. 목적
 
@@ -96,12 +96,12 @@ dev 결과는 `results/summary.csv`에 있다. 같은 문장 기준 척도는 E3
   - Dp@0.25는 dev MOS 3.97로 탈락했다.
   - Dp@1.0은 화자 기준(0.637)은 넘었지만 MOS 2.99로 탈락했다.
 - **held-out 결과(D@0.25)**: 정확도 27.1% (95% CI 20.8–31.3), 우연 대비 단측 이항 p = 0.047. macro-F1 0.22, 화자 유사도 0.694, 추정 MOS 4.33. D@1.0 대비 정확도는 −45.8%p였다(McNemar 0 / 22, p < 10⁻⁶).
-- 즉 '화자 유지 + 음질 4.0 이상'을 모두 요구하면 이 시스템이 SER로 확인할 수 있는 감정 전달은 우연 수준을 겨우 넘는다. 이 결과는 정직하게 보고한다.
+- 즉 '화자 유지 + 음질 4.0 이상'을 모두 요구하면 이 시스템이 SER로 확인할 수 있는 감정 전달은 우연 수준을 겨우 넘는다.
 - 민감도 참고(규칙 결정 뒤에 본 것이며 권장 규칙이 아님): MOS 조건을 빼고 화자 ≥ 0.60만 요구하면 dev 기준으로 Dp@1.0이 선택된다(dev 54.2%). 이때 held-out은 정확도 58.3%, 화자 0.662, 추정 MOS 3.17이다.
 
 ### 3.5 재현성 관찰 (edge-tts 실행 간 변동)
 
-D@1.0은 E3와 프리셋이 같은데도 held-out 정확도가 E3 77.1%에서 E3b 72.9%로 달라졌다. 원인은 다시 합성한 edge-tts 음성이 매번 조금씩 다르다는 데 있다. 같은 요청으로 B 중립 12문장을 다시 받아 비교했다. 길이는 같았고 파형 상관은 0.9985–0.9995였지만, 차이 신호가 −25 ~ −30 dB 남았다. 이 작은 차이로 SER 판정 4건이 바뀌었다. S01 놀람과 S07 중립은 정답에서 오답이 됐고, S08·S09 두려움은 오답 종류만 바뀌었다(놀람 → 행복). emotion2vec가 거의 one-hot으로 과신하는 모델이어서 판정이 경계에서 쉽게 뒤집힌다. 따라서 **정확도 ±4%p 정도는 합성 측 측정 잡음**으로 봐야 한다. 논문에서는 E3 수치(77.1%)와 E3b 수치(72.9%)를 함께 쓰고 이 점을 밝혀야 한다.
+D@1.0은 E3와 프리셋이 같은데도 held-out 정확도가 E3 77.1%에서 E3b 72.9%로 달라졌다. 원인은 다시 합성한 edge-tts 음성이 매번 조금씩 다르다는 데 있다. 같은 요청으로 B 중립 12문장을 다시 받아 비교했다. 길이는 같았고 파형 상관은 0.9985–0.9995였지만, 차이 신호가 −25 ~ −30 dB 남았다. 이 작은 차이로 SER 판정 4건이 바뀌었다. S01 놀람과 S07 중립은 정답에서 오답이 됐고, S08·S09 두려움은 오답 종류만 바뀌었다(놀람 → 행복). emotion2vec가 거의 one-hot으로 과신하는 모델이어서 판정이 경계에서 쉽게 뒤집힌다. 따라서 **정확도 ±4%p 정도는 합성 측 측정 잡음**으로 봐야 한다. 이후 E3c에서 같은 프리셋으로 5회 다시 합성했을 때 D 정확도는 평균 74.6%(SD 0.9, 범위 72.9–75.0%)였다. 72.9%는 그 최솟값과 같고, E3의 77.1%는 run 0을 포함한 7회 중 최댓값이었다(`../E3c_robustness/README.md` 3.1절).
 
 ### 3.6 해석
 
@@ -111,14 +111,11 @@ D@1.0은 E3와 프리셋이 같은데도 held-out 정확도가 E3 77.1%에서 E3
 4. **절충 곡선**: 화자 유사도 축에서는 Dp가 D를 지배한다(같은 화자 유사도에서 정확도가 더 높음. 예: 화자 ≈ 0.66–0.69에서 Dp@1.0 58.3% 대 D@0.25 27.1%). MOS 축에서는 D가 Dp를 지배한다. 둘 다 만족하는 구간(화자 ≥ 0.6, MOS ≥ 4.0)에서 얻을 수 있는 SER 정확도는 약 25–27%다.
 5. 두려움은 어떤 조합에서도 인식되지 않았다(최대 1/8).
 
-## 4. 그림과 캡션 초안
+## 4. 그림
 
-`figures/fig_e3b_tradeoff.{png,pdf}`. 폭 160 mm, 그림 안 글자는 영문, 제목 없음. 회색 파선과 흰 사각형은 D, 검은 실선과 검은 원은 D-psola, 큰 빈 원은 권장점, 점선은 우연 수준이다.
+`figures/fig_e3b_tradeoff.{png,pdf}`: 감정 강도 k에 따른 SER 정확도와 (a) 화자 유사도, (b) 추정 MOS의 절충(표 2, held-out). 폭 160 mm, 그림 안 글자는 영문, 제목 없음. 회색 파선과 흰 사각형은 D, 검은 실선과 검은 원은 D-psola, 큰 빈 원은 권장점(3.4절), 점선은 우연 수준이다.
 
-`<그림 n> 감정 강도 k에 따른 음성 감정 인식 정확도와 (a) 화자 임베딩 유사도, (b) SQUIM 추정 MOS 사이의 절충 (튜닝에 쓰지 않은 8문장, 오차 막대는 문장 단위 부트스트랩 95% 신뢰구간. D: 운율 프리셋+후처리, D-psola: 중립 합성+PSOLA 운율 변환. 큰 원은 개발 문장 규칙(화자 유사도 ≥0.6, 추정 MOS ≥4.0)으로 고른 권장 운용점)`
-`(Fig. n Trade-off between SER accuracy and (a) speaker-embedding similarity and (b) SQUIM-estimated MOS as a function of emotion intensity k on 8 held-out sentences; error bars: sentence-level bootstrap 95% CIs. D: prosody preset + DSP; D-psola: neutral synthesis + PSOLA prosody transformation; large circle: operating point selected on dev sentences (speaker similarity ≥ 0.6, MOS ≥ 4.0))`
-
-## 5. `prosody.py` 변경 (하위 호환)
+## 5. `app/tts/prosody.py` 변경 (하위 호환)
 
 ```python
 synthesize_bytes(text, emotion="중립", mode="D", intensity=1.0) -> bytes
@@ -132,26 +129,28 @@ DP_PRESETS                         # 표 1의 값 (= results/dpsola_presets.json
 
 `mode="C"`에 intensity를 주면 SSML 값만 스케일된다. `mode="B"`는 intensity를 무시한다. 기존 호출(인자 생략)의 출력은 바뀌지 않는다.
 
-## 6. 재현
+## 6. 결과 파일
+
+`results/summary.csv`(dev·test × 변형 × k), `per_file.csv`, `per_file_raw.pkl`, `recall_by_emotion_test.csv`, `spk_by_emotion_test.csv`, `stat_tests.csv`, `operating_point.json`(규칙, dev 후보표, 선택점의 dev·test 수치), `dpsola_presets.json`, `run.log`.
+
+## 7. 한계
+
+E3의 한계(사람 평가 없음, SER 단일 모델이 대리 지표, SQUIM은 운율 자연성을 직접 재지 않음, 단일 화자, 소규모)가 그대로 적용된다. 사람 청취 평가는 후속으로 진행 예정이다. 덧붙여 다음이 있다.
+- Dp 프리셋은 SER로 따로 튜닝하지 않고 C 단계의 측정 변화를 옮겨 만들었다. 따라서 Dp에 불리한 비교일 수 있다(D는 SER 마진으로 직접 튜닝됨).
+- 강도 k의 선형/기하 보간은 설계 선택이며, 지각적으로 등간격이라는 보장은 없다.
+- 권장점 규칙의 임계값(0.60, 4.0)은 사전에 정했지만 근거는 경험적이다(0.60은 같은 화자·다른 문장 기준 0.80과 다른 화자 기준 0.21 사이). 결과가 임계값에 민감하다(3.4절 민감도 참고).
+- edge-tts 실행 간 변동으로 정확도에 ±4%p 정도의 측정 잡음이 있다(3.5절). E3c의 5회 재합성에서는 D 정확도의 SD가 0.9%p였다.
+
+## 8. 재현
 
 ```bash
 cd face-emotion-tts/experiments/E3_emotional-speech/E3b_intensity
 ../../../.venv/bin/python scripts/derive_dpsola.py   # E3 results/per_file.csv의 dev 값 → results/dpsola_presets.json
-#  (prosody.py의 DP_PRESETS = 이 값)
+#  (app/tts/prosody.py의 DP_PRESETS = 이 값)
 ../../../.venv/bin/python scripts/run_e3b.py         # 합성 + 지표 + 요약 + 운용점 (~35분)
 ../../../.venv/bin/python scripts/figures_e3b.py
 ```
 
 전체 오디오 720개(135 MB)와 edge-tts 캐시는 `data/E3b_audio/`, `data/E3b_edge_cache/`(.gitignore)에 있다. 실험 폴더 `audio/<변형>_k<100k>/`에는 S01·S02 예시만 복사했다(26 MB).
 
-## 7. 결과 파일
-
-`results/summary.csv`(dev·test × 변형 × k), `per_file.csv`, `per_file_raw.pkl`, `recall_by_emotion_test.csv`, `spk_by_emotion_test.csv`, `stat_tests.csv`, `operating_point.json`(규칙, dev 후보표, 선택점의 dev·test 수치), `dpsola_presets.json`, `run.log`.
-
-## 8. 한계
-
-E3의 한계(사람 평가 없음, SER 단일 모델이 대리 지표, SQUIM은 운율 자연성을 직접 재지 않음, 단일 화자, 소규모)가 그대로 적용된다. 덧붙여 다음이 있다.
-- Dp 프리셋은 SER로 따로 튜닝하지 않고 C 단계의 측정 변화를 옮겨 만들었다. 따라서 Dp에 불리한 비교일 수 있다(D는 SER 마진으로 직접 튜닝됨).
-- 강도 k의 선형/기하 보간은 설계 선택이며, 지각적으로 등간격이라는 보장은 없다.
-- 권장점 규칙의 임계값(0.60, 4.0)은 사전에 정했지만 근거는 경험적이다(0.60은 같은 화자·다른 문장 기준 0.80과 다른 화자 기준 0.21 사이). 결과가 임계값에 민감하다(3.4절 민감도 참고).
-- edge-tts 실행 간 변동으로 정확도에 ±4%p 정도의 측정 잡음이 있다(3.5절).
+지금 다시 합성하려면 edge-tts 7.3.1 이상이 필요하다(7.2.8은 2026-11부터 403으로 거부됨, `../E3c_robustness/README.md` 2.1절).

@@ -2,7 +2,9 @@
 
 ## 1. 목적
 
-`app/face/face_emotion.py`의 시간적 안정화(EMA, 다수결, 유지 시간, 전송 간격)가 실제 영상에서 (1) 라벨 깜빡임을 얼마나 줄이는지, (2) 정확도에 영향이 있는지, (3) 감정이 바뀔 때 반응이 얼마나 늦어지는지 측정한다. 또 (4) `app/tts/app.py`의 문장 단위 지배 감정 선택(`_pick_dominant_ko`)이 만드는 태그가 정답과 얼마나 맞는지 시뮬레이션한다.
+졸업논문 코드(`app/face/face_emotion.py`, 현재 앱의 `--rule thesis`)의 시간적 안정화(EMA, 다수결, 유지 시간, 전송 간격)가 실제 영상에서 (1) 라벨 깜빡임을 얼마나 줄이는지, (2) 정확도에 영향이 있는지, (3) 감정이 바뀔 때 반응이 얼마나 늦어지는지 측정한다. 또 (4) `app/tts/app.py`의 문장 단위 지배 감정 선택(`_pick_dominant_ko`, 졸업논문의 지속 시간 규칙)이 만드는 태그가 정답과 얼마나 맞는지 시뮬레이션한다.
+
+현재 앱은 E5 결과를 반영해 라벨 규칙으로 히스테리시스(δ=0.5)를 쓰고(CNN은 `hyst`, HSEmotion은 합의 게이트를 더한 `gate_hyst`), 문장 태그는 0.2초 확률 요약의 질량으로 정한다. `_pick_dominant_ko`는 확률 요약이 없을 때만 쓰는 폴백이다. 이 실험의 수치는 모두 졸업논문 코드 기준이다.
 
 ## 2. 데이터
 
@@ -18,12 +20,12 @@
 ## 3. 절차
 
 1. **프레임별 확률 캐시** (`scripts/e2_extract_probs.py`): 모든 프레임(서브샘플링 없음)에 대해 MediaPipe 검출(가장 큰 얼굴) → 48×48 회색조 /255 → CNN 7클래스 확률을 구해 `data/ravdess/probs/*.npz`에 저장. 타임스탬프는 프레임 번호/fps(실제 영상 시간)이다.
-2. **안정화 재현** (`scripts/stabilizer.py`): `face_emotion.py`를 한 줄씩 옮겼고, 벽시계 시간 대신 영상 타임스탬프를 쓴다.
-   - `EMA_ALPHA=0.8`(새 프레임 가중치 0.8), 다수결 창 `WIN_SEC=0.35` s(창 길이 = `int(0.35·fps_smooth)`, `fps_smooth`는 0에서 시작하는 0.9/0.1 EMA, `history` maxlen 30), 최종 라벨 규칙 `final = maj if maj==ema else ema`, `CONF_THRESHOLD=0.3`, `MIN_HOLD_MS=100`, `MIN_SEND_INTERVAL=0.2` s. 얼굴 미검출 프레임은 "Neutral, conf 0"으로 처리한다(원 코드와 같음).
-   - 전송 이벤트의 confidence는 원 코드처럼 **전송 시점까지 유지 구간에서 나온 EMA 확률의 최댓값**이다.
+2. **안정화 재현** (`scripts/stabilizer.py`): 졸업논문 코드의 `face_emotion.py`를 한 줄씩 옮겼고, 벽시계 시간 대신 영상 타임스탬프를 쓴다.
+   - `EMA_ALPHA=0.8`(새 프레임 가중치 0.8), 다수결 창 `WIN_SEC=0.35` s(창 길이 = `int(0.35·fps_smooth)`, `fps_smooth`는 0에서 시작하는 0.9/0.1 EMA, `history` maxlen 30), 최종 라벨 규칙 `final = maj if maj==ema else ema`, `CONF_THRESHOLD=0.3`, `MIN_HOLD_MS=100`, `MIN_SEND_INTERVAL=0.2` s. 얼굴 미검출 프레임은 "Neutral, conf 0"으로 처리한다(졸업논문 코드와 같음).
+   - 전송 이벤트의 confidence는 졸업논문 코드처럼 **전송 시점까지 유지 구간에서 나온 EMA 확률의 최댓값**이다.
 3. **비교 변형** (프레임 단위 라벨열)
-   - 원시 출력(raw argmax) / 지수평활(EMA argmax) / 다수결(raw argmax의 0.35 s 다수결) / **EMA+다수결(코드의 최종 규칙)** / 전체 파이프라인(+유지 시간·신뢰도·전송 간격 → 마지막으로 전송된 라벨)
-   - 참고용 **합의 게이트**(코드에는 없음): EMA와 다수결이 같을 때만 출력을 바꾸고, 다르면 이전 출력을 유지.
+   - 원시 출력(raw argmax) / 지수평활(EMA argmax) / 다수결(raw argmax의 0.35 s 다수결) / **EMA+다수결(졸업논문 코드의 최종 규칙, 현재 앱의 `--rule thesis`)** / 전체 파이프라인(+유지 시간·신뢰도·전송 간격 → 마지막으로 전송된 라벨)
+   - 참고용 **합의 게이트**(졸업논문 코드에는 없음. 현재 앱의 `gate` 규칙에 해당): EMA와 다수결이 같을 때만 출력을 바꾸고, 다르면 이전 출력을 유지.
 4. **실행 모드**
    - **연속 스트림(주 결과)**: 배우마다 60클립(calm 제외 52클립)을 무작위 순서(시드 42)로 이어 붙여 하나의 안정화기에 연속으로 넣는다. 상태가 클립 사이로 이어진다(실사용과 같음).
    - 독립 클립: 클립마다 상태를 초기화한다.
@@ -34,7 +36,7 @@
    - 클립 정확도: 0.5 s 이후 프레임에서 가장 많이 나온 라벨이 정답인 비율.
    - 클립당 전송 이벤트 수.
 6. **감정 전환 반응 지연**: 같은 배우의 두 클립 A→B(6감정 라벨이 다름)를 이어 붙인다. 각 클립 앞 0.5 s 중립 구간은 잘라내 전환 순간에 확률이 계단처럼 바뀌게 했다. 원시 출력이 B의 0.5 s 이후 프레임 과반에서 B를 맞힌 경우만 쓴다. 배우당 무작위 150쌍, 모두 **1,200쌍**. 지연은 두 가지로 잰다. (a) 최초 도달: 라벨이 처음 B가 될 때까지, (b) 안정 도달: 라벨이 B가 되어 그대로 0.5 s 이상 유지되기 시작한 시점까지. 전환 직전에 이미 B였던 쌍은 해당 변형에서 뺐다.
-7. **문장 태그 시뮬레이션**: 연속 스트림에서 전송 이벤트를 `EMO_HISTORY`(deque 2000)에 넣고, 각 클립의 [시작, 끝]을 한 "문장" 구간으로 보고 클립이 끝날 때 `_pick_dominant_ko(t0, t1, conf_thresh=0.5, min_ratio=0.4)`를 부른다(`stabilizer.EmotionServer`, 원 코드를 그대로 옮김). 이 함수는 지배 감정이 중립이거나, 비율이 min_ratio보다 작거나, conf≥0.5인 이벤트가 없으면 `""`를 돌려준다. 이때 웹 UI는 기본 감정으로 대체한다. 여기서는 기본 감정을 **중립**으로 가정해 `""`를 "중립"으로 채점했다.
+7. **문장 태그 시뮬레이션**: 연속 스트림에서 전송 이벤트를 `EMO_HISTORY`(deque 2000)에 넣고, 각 클립의 [시작, 끝]을 한 "문장" 구간으로 보고 클립이 끝날 때 `_pick_dominant_ko(t0, t1, conf_thresh=0.5, min_ratio=0.4)`를 부른다(`stabilizer.EmotionServer`, 졸업논문 코드를 그대로 옮김. 현재 앱에서는 확률 요약이 없을 때의 폴백). 이 함수는 지배 감정이 중립이거나, 비율이 min_ratio보다 작거나, conf≥0.5인 이벤트가 없으면 `""`를 돌려준다. 이때 웹 UI는 기본 감정으로 대체한다. 여기서는 기본 감정을 **중립**으로 가정해 `""`를 "중립"으로 채점했다.
 8. **민감도**: conf_thresh {0.3–0.7} × min_ratio {0.2–0.6}, EMA_ALPHA {0.2–1.0}, MIN_HOLD_MS {0–800 ms}.
 
 ## 4. 결과
@@ -46,15 +48,15 @@
 | 원시 출력 | 3.23 | – | 48.2% | 42.3% | 51.9% | 45.0% |
 | 지수평활(EMA) | 2.75 | −15% | 48.3% | 42.4% | 51.7% | 45.0% |
 | 다수결 | 1.11 | −66% | 48.9% | 42.8% | 52.4% | 45.2% |
-| **EMA+다수결 (코드 규칙)** | **2.75** | −15% | 48.3% | 42.4% | 51.7% | 45.0% |
-| 합의 게이트 (참고, 코드에 없음) | 1.02 | −69% | 48.9% | 42.9% | 52.4% | 45.2% |
+| **EMA+다수결 (졸업논문 코드 규칙)** | **2.75** | −15% | 48.3% | 42.4% | 51.7% | 45.0% |
+| 합의 게이트 (참고, 졸업논문 코드에 없음) | 1.02 | −69% | 48.9% | 42.9% | 52.4% | 45.2% |
 | **전체 파이프라인 (전송 라벨)** | **0.99** | **−69%** | 48.0% | 42.4% | 51.0% | 45.0% |
 
 - 클립당 전송 이벤트: 평균 **3.70개**(중앙값 4), 초당 1.00개.
-- **중요한 발견:** 코드의 최종 규칙 `final_idx = majority_idx if majority_idx == ema_label_idx else ema_label_idx`는 어느 경우든 EMA 라벨을 고른다. 그래서 "EMA+다수결"은 **EMA 단독과 완전히 같고, 다수결은 최종 라벨에 아무 영향이 없다**(표의 두 행 수치가 같음). 깜빡임을 실제로 줄이는 것은 뒤 단계의 유지 시간(100 ms)과 전송 간격 필터다. 원래 의도로 보이는 "합의할 때만 바꾼다" 규칙(합의 게이트)으로 고치면 프레임 단위에서도 깜빡임이 1.02회/s로 줄고 정확도는 그대로다.
+- **중요한 발견:** 졸업논문 코드의 최종 규칙 `final_idx = majority_idx if majority_idx == ema_label_idx else ema_label_idx`는 어느 경우든 EMA 라벨을 고른다. 그래서 "EMA+다수결"은 **EMA 단독과 완전히 같고, 다수결은 최종 라벨에 아무 영향이 없다**(표의 두 행 수치가 같음). 깜빡임을 실제로 줄이는 것은 뒤 단계의 유지 시간(100 ms)과 전송 간격 필터다. 원래 의도로 보이는 "합의할 때만 바꾼다" 규칙(합의 게이트)으로 고치면 프레임 단위에서도 깜빡임이 1.02회/s로 줄고 정확도는 그대로다.
 - 안정화는 깜빡임을 줄일 뿐 정확도는 거의 바꾸지 않는다(±1%p). 정확도의 한계는 분류기 자체에 있다.
 
-다른 조건(같은 순서: 원시 / EMA(=코드 규칙) / 다수결 / 합의 게이트 / 전체):
+다른 조건(같은 순서: 원시 / EMA(=졸업논문 코드 규칙) / 다수결 / 합의 게이트 / 전체):
 
 | 조건 | 전환 수 (회/s) | 클립당 이벤트 | 프레임 정확도 6감정 (전체 파이프라인) |
 |---|---|---|---|
@@ -82,7 +84,7 @@ FER2013 PrivateTest 정확도(67.0%, E1)에 비해 RAVDESS 프레임 정확도(4
 | 변형 | 최초 도달 중앙값 [IQR] (s) | 평균 | 안정 도달(≥0.5 s 유지) 중앙값 [IQR] (s) | 원시 대비 추가 지연 중앙값 [IQR] (s) | 도달률 |
 |---|---|---|---|---|---|
 | 원시 출력 | 0.000 [0.000–0.133] | 0.099 | 0.033 [0.000–0.567] | – | 100% (안정 99.3%) |
-| EMA (=코드 규칙) | 0.000 [0.000–0.167] | 0.105 | 0.033 [0.000–0.534] | 0.000 [0.000–0.000] | 100% |
+| EMA (=졸업논문 코드 규칙) | 0.000 [0.000–0.167] | 0.105 | 0.033 [0.000–0.534] | 0.000 [0.000–0.000] | 100% |
 | 다수결 | 0.167 [0.133–0.367] | 0.289 | 0.167 [0.133–0.467] | 0.133 [0.133–0.167] | 100% |
 | 합의 게이트 (참고) | 0.167 [0.133–0.367] | 0.300 | 0.167 [0.133–0.467] | 0.133 [0.133–0.167] | 100% |
 | **전체 파이프라인** | **0.100 [0.100–0.400]** | 0.293 | **0.100 [0.100–0.467]** | **0.100 [0.100–0.100]** | 100% |
@@ -102,7 +104,7 @@ FER2013 PrivateTest 정확도(67.0%, E1)에 비해 RAVDESS 프레임 정확도(4
 | 독립 클립 / 15 fps 조건 정확도 | 44.2% / 44.5% |
 
 - 태그가 붙으면 대체로 맞지만(정밀도 85%), 절반 넘게 태그가 비어 기본 감정으로 떨어진다. 원인은 두 가지다. ① 분류기가 RAVDESS의 비중립 표정을 중립으로 많이 봄(4.2), ② 이벤트 confidence가 전송 시점의 값으로 고정되는데, **전송 이벤트 1,538개 중 33.0%가 conf<0.5**여서(두려움 59.5%, 슬픔 50.7%, 분노 44.3%; `results/event_confidence_stats.txt`) 그 이벤트 뒤의 구간 전체가 지속 시간 계산에서 빠진다.
-- 민감도(`results/sensitivity_tag_params.csv`, 그림 `fig_e2_tag_sensitivity`): 임계값을 낮출수록 좋아진다. conf_thresh 0.3·min_ratio 0.2–0.3에서 정확도 51.2%·빈 태그 43.8%로 가장 좋다. conf_thresh 0.7·min_ratio 0.6에서는 24.3%·83.2%로 가장 나쁘다. 현재 설정(0.5, 0.4)은 43.5%·57.7%다.
+- 민감도(`results/sensitivity_tag_params.csv`, 그림 `fig_e2_tag_sensitivity`): 임계값을 낮출수록 좋아진다. conf_thresh 0.3·min_ratio 0.2–0.3에서 정확도 51.2%·빈 태그 43.8%로 가장 좋다. conf_thresh 0.7·min_ratio 0.6에서는 24.3%·83.2%로 가장 나쁘다. 졸업논문 설정(0.5, 0.4)은 43.5%·57.7%다.
 
 ### 4.5 안정화 파라미터 민감도 (`results/sensitivity_stab_params.csv`, 그림 `fig_e2_stab_sensitivity`)
 
@@ -123,18 +125,19 @@ FER2013 PrivateTest 정확도(67.0%, E1)에 비해 RAVDESS 프레임 정확도(4
 - 강한 EMA(α 작음)는 확률을 평탄하게 만들어 이벤트 confidence가 0.5 아래로 떨어지므로 태그가 더 자주 비게 된다(α=0.2에서 빈 태그 73%).
 - 유지 시간 200–300 ms는 이벤트 수를 절반 이하로 줄이면서 태그 정확도를 약간 높인다(45%). 500 ms 이상이면 반응이 늦어져 프레임 정확도가 떨어진다.
 
-## 5. 그림 목록과 캡션 초안
+## 5. 그림 목록
 
-그림 규정: 그림 안 글자는 모두 영문, 그림 제목 없음, 흑백 구분(해칭·마커·명도), 폭 160 mm(전체) 또는 76 mm(단), Arial, PNG 300 dpi + PDF. 그림의 범례 표기는 Raw = 원시 출력, Majority = 다수결, **EMA\*** = 지수평활(코드의 'EMA+다수결' 최종 규칙과 결과가 같음), **Agreement gate†** = 합의 게이트(코드에 없는 참고 변형), Full pipeline = 전체 파이프라인(전송 라벨)이다. 캡션에 이 기호 설명을 넣는다. 그림 속 클래스명은 7클래스 영문명이고, 문장 태그는 6감정 이름을 영문으로 바꿔 적었다(분노→Angry 등).
+학회 그림 규정: 그림 안 글자는 모두 영문, 그림 제목 없음, 흑백 구분(해칭·마커·명도), 폭 160 mm(전체) 또는 76 mm(단), Arial, PNG 300 dpi + PDF. 범례 표기는 Raw = 원시 출력, Majority = 다수결, **EMA\*** = 지수평활(졸업논문 코드의 'EMA+다수결' 최종 규칙과 결과가 같음), **Agreement gate†** = 합의 게이트(졸업논문 코드에 없는 참고 변형), Full pipeline = 전체 파이프라인(전송 라벨)이다. 클래스명은 7클래스 영문명이고, 문장 태그는 6감정 이름을 영문으로 적었다(분노→Angry 등).
 
-| 파일 | 폭 | 캡션 초안 (국문 / 영문) |
-|---|---|---|
-| `figures/fig_e2_flicker_accuracy` | 159 mm | <그림 X> 안정화 변형별 (a) 초당 라벨 전환 수, (b) 프레임 정확도, (c) 클립 정확도(RAVDESS 416클립, 6감정 기준, 클립 시작 0.5초 제외). \*지수평활은 코드의 지수평활+다수결 규칙과 결과가 같다. †합의 게이트는 비교용 변형이다. 전체 파이프라인은 정확도를 유지하면서 라벨 전환을 원시 출력 대비 69% 줄였다.<br>(Fig. X (a) Label switches per second, (b) frame accuracy and (c) clip accuracy of each stabilization variant on RAVDESS) |
-| `figures/fig_e2_transition_latency` | 159 mm | <그림 X> 감정 전환 후 반응 지연(1,200쌍). (a) 새 감정에 처음 도달할 때까지, (b) 새 감정에 도달해 0.5초 이상 유지되기 시작할 때까지의 시간. 상자는 사분위 범위, 가로선은 중앙값, 마름모는 평균이다. 전체 파이프라인의 지연 중앙값은 0.10초다.<br>(Fig. X Reaction latency after an emotion switch: (a) first hit, (b) settled for ≥0.5 s) |
-| `figures/fig_e2_tag_sensitivity` | 144 mm | <그림 X> 문장 태그 결정 파라미터(신뢰도 임계값 conf_thresh × 최소 지속 비율 min_ratio)에 따른 (a) 태그 정확도와 (b) 빈 태그 비율. 점선 칸은 현재 설정(0.5, 0.4)이다.<br>(Fig. X Sentence-tag accuracy and empty-tag rate as functions of conf_thresh and min_ratio) |
-| `figures/fig_e2_stab_sensitivity` | 158 mm | <그림 X> (a) 지수평활 계수(EMA_ALPHA)와 (b) 최소 유지 시간(MIN_HOLD_MS)에 따른 전송 이벤트 수, 라벨 전환 수, 문장 태그 정확도, 프레임 정확도. 겹침을 피하려고 왼쪽 축 계열과 오른쪽 축 계열의 표식을 가로로 조금씩 엇갈려 그렸다.<br>(Fig. X Sensitivity of the pipeline to EMA_ALPHA and MIN_HOLD_MS) |
-| `figures/fig_e2_ravdess_confusion_raw` | 82 mm | <그림 X> RAVDESS 영상 프레임에 대한 표정 인식 모델의 행 정규화 혼동행렬(원시 출력, 7클래스). 비중립 감정이 중립으로 크게 쏠린다.<br>(Fig. X Row-normalized confusion matrix of raw per-frame predictions on RAVDESS) |
-| `figures/fig_e2_timeline_example` | 159 mm | <그림 X> 연속 스트림 예시(배우 1, 클립 4개). 회색 띠는 정답 감정, 검은 선은 각 단계의 라벨, ▼는 전송 이벤트, 위쪽 글자는 클립별 정답과 문장 태그 결과다.<br>(Fig. X Example of a continuous stream: labels at each stage, emitted events and resulting sentence tags) |
+| 파일 | 폭 | 내용 | 생성 스크립트 |
+|---|---|---|---|
+| `figures/fig_e2_flicker_accuracy` | 159 mm | 안정화 변형별 초당 라벨 전환 수, 프레임 정확도, 클립 정확도 | `e2_analyze.py` |
+| `figures/fig_e2_transition_latency` | 159 mm | 감정 전환 후 반응 지연(최초 도달, 0.5초 유지 도달) 분포 | `e2_analyze.py` |
+| `figures/fig_e2_tag_sensitivity` | 144 mm | conf_thresh × min_ratio에 따른 문장 태그 정확도와 빈 태그 비율 | `e2_analyze.py` |
+| `figures/fig_e2_stab_sensitivity` | 158 mm | EMA_ALPHA·MIN_HOLD_MS에 따른 이벤트 수, 전환 수, 태그·프레임 정확도 | `e2_analyze.py` |
+| `figures/fig_e2_ravdess_confusion_raw` | 82 mm | RAVDESS 프레임 원시 출력의 행 정규화 혼동행렬(7클래스) | `e2_analyze.py` |
+| `figures/fig_e2_timeline_example` | 159 mm | 연속 스트림 예시(배우 1, 클립 4개)의 단계별 라벨, 전송 이벤트, 문장 태그 | `e2_analyze.py` |
+| `figures/fig_e2_timeline_example_col` | 79 mm | 같은 예시를 한 단 폭(76 mm)에 맞춰 글자 크기를 키운 판(학술지 원고용) | `e2_fig_timeline_col.py` |
 
 ## 6. 한계
 
@@ -152,4 +155,5 @@ cd face-emotion-tts
 .venv/bin/python experiments/E2_emotion-stabilization/scripts/e2_partial_unzip.py    # 배우 01–08의 AV 클립을 data/ravdess/videos/ 에
 .venv/bin/python experiments/E2_emotion-stabilization/scripts/e2_extract_probs.py    # 프레임별 확률 → data/ravdess/probs/ (약 5분)
 .venv/bin/python experiments/E2_emotion-stabilization/scripts/e2_analyze.py          # 모든 지표·민감도·그림 (약 3분)
+.venv/bin/python experiments/E2_emotion-stabilization/scripts/e2_fig_timeline_col.py  # 시간 변화 예시의 76 mm 한 단 폭 판 (data/ravdess/probs/ 필요)
 ```

@@ -1,6 +1,6 @@
 # 졸업논문 검토 메모
 
-검토 대상은 `paper/1_thesis/thesis_final_2025-11-06.pdf`와 `app/face/`, `app/tts/` 코드이다. 학술지 원고를 쓸 때 고쳐야 할 부분을 정리했다.
+검토 대상은 `paper/1_thesis/thesis_final_2025-11-06.pdf`와 그 시점의 `app/face/`, `app/tts/` 코드이다(2026-10 작성). 아래의 코드 문제는 이후 모두 고쳤다(`experiments/E4_system-latency`, `experiments/E5_improvements`). 본문의 현재형 서술은 검토 당시 코드 기준이다.
 
 ## 논문 설명과 실제 코드가 다른 부분
 

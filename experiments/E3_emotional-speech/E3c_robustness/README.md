@@ -1,13 +1,13 @@
 # E3c. 합성 반복 변동과 남성 화자 일반화
 
-작성: agent-tts, 2026-11-19. 공통 규칙은 `../README.md`(E3)와 `../E3b_intensity/README.md`(E3b)를 따른다. 모든 수치는 이 폴더의 스크립트를 실제로 돌려 얻은 값이다(시드 42).
+작성일: 2026-11-19. 공통 규칙은 `../README.md`(E3)와 `../E3b_intensity/README.md`(E3b)를 따른다. 모든 수치는 이 폴더의 스크립트를 실제로 돌려 얻은 값이다(시드 42).
 
 ## 1. 목적
 
 1. **실험 A (합성 반복 변동).** edge-tts 출력은 같은 요청이어도 실행마다 조금씩 다르다. E3(77.1%)와 E3b(72.9%)의 D 정확도 차이를 지금까지는 재합성 1회로만 "±4%p 정도"라고 설명했다. 같은 프리셋으로 평가 8문장을 5회 독립적으로 다시 합성해, 이 흔들림이 실제로 얼마인지와 조건 간 순위가 유지되는지 확인한다.
 2. **실험 B (남성 화자 일반화).** 지금까지 모든 결과는 여성 화자 `ko-KR-SunHiNeural` 하나에서 나왔다. D-psola(DP)는 F0 변화를 반음 단위로 주므로 다른 화자에 그대로 옮길 수 있다. 남성 화자 `ko-KR-InJoonNeural`에 DP 프리셋을 **튜닝 없이** 적용해 SunHi 결과와 비교한다. C·D는 SSML 피치를 Hz 단위로 주어 여성 화자 기준값이므로 이번에는 제외했다.
 
-사람 청취 평가는 하지 않았다. 감정 전달은 E3와 같이 자동 음성 감정 인식(SER)으로 대리 측정했다.
+사람 청취 평가는 하지 않았다(후속으로 진행 예정). 감정 전달은 E3와 같이 자동 음성 감정 인식(SER)으로 대리 측정했다.
 
 ## 2. 방법
 
@@ -21,7 +21,7 @@
   - **화자 유사도**: ECAPA-TDNN 코사인. 감정 음성(중립 제외)을 기준 음성과 비교했다. 실험 A의 기준은 E3 `audio/B`의 같은 문장 SunHi 중립이다(E3b와 같은 기준). 실험 B의 기준은 E3 `audio/spk_ref`의 같은 문장 InJoon 중립(2026-10-12 합성)이다.
   - **SQUIM 추정 MOS**: 6감정 전체. 비매칭 참조는 E3와 같이 `audio/B/S05_neutral.wav`이다.
 - **측정 모델 재현 확인**: 로컬 Hugging Face 캐시가 지워져 있어 emotion2vec, wav2vec2-ER, SQUIM 모델을 다시 내려받았다. 다시 받은 모델로 기존 run 0 음성 152개(E3 B·C·D, E3b DP k=1)를 다시 채점했다. emotion2vec 판정과 wav2vec2 판정은 152개 모두 같았고, 추정 MOS 차이는 최대 4×10⁻¹⁶이었다(`results/model_check.json`). 따라서 아래의 run 간 차이는 모델 탓이 아니라 음성 차이에서 나온 것이다.
-- **edge-tts 버전**: `.venv`에 설치된 edge-tts 7.2.8은 2026-11-19 현재 서버가 403(`WSServerHandshakeError`)으로 거부했다. 7.3.1과 비교하면 요청 본문(`communicate.py`: SSML prosody, 출력 형식 `audio-24khz-48kbitrate-mono-mp3`)은 같고, 인증 토큰 생성(`drm.py`)과 `Sec-MS-GEC-Version` 접두어만 다르다. 그래서 7.3.1을 `data/pylib_edge_tts_7.3.1/`에 따로 설치해 앞에 두고 썼다(`.venv`는 바꾸지 않았다). run 0(2026-10-12)은 7.2.8로 만든 음성이다.
+- **edge-tts 버전**: 측정 당시 `.venv`에 설치된 edge-tts 7.2.8은 2026-11-19 서버가 403(`WSServerHandshakeError`)으로 거부했다. 7.3.1과 비교하면 요청 본문(`communicate.py`: SSML prosody, 출력 형식 `audio-24khz-48kbitrate-mono-mp3`)은 같고, 인증 토큰 생성(`drm.py`)과 `Sec-MS-GEC-Version` 접두어만 다르다. 그래서 7.3.1을 `data/pylib_edge_tts_7.3.1/`에 따로 설치해 앞에 두고 썼다(당시 `.venv`는 바꾸지 않았다). run 0(2026-10-12)은 7.2.8로 만든 음성이다. 지금은 `.venv`도 7.3.1이고, `app/tts/requirements.txt`는 `edge-tts>=7.3.1`이다.
 
 ### 2.2 실험 A: 5회 독립 재합성
 
@@ -29,7 +29,7 @@
 
 - **run 0**: 기존 결과를 그대로 썼다. B·C·D는 E3(`../results/per_file.csv`), DP(k=1)는 E3b(`../E3b_intensity/results/per_file.csv`)다. E3b에서 다시 합성한 D(k=1, 72.9%)는 **run 0b**로 따로 표시했다.
 - **run 1–5**: 2026-11-19 16:04–16:14 KST에 합성했다(run 1 16:04:48–16:05:04, run 2 16:13:16–16:13:26, run 3 16:13:37–16:13:46, run 4 16:13:57–16:14:07, run 5 16:14:18–16:14:27).
-- **CI**: run 1–5를 합친 정확도(n = 240)의 95% CI를 부트스트랩 10,000회로 구했다. 요청대로 **문장×실행(40개 클러스터) 재표집**을 주 CI로 썼다. 같은 문장이 다섯 run에 반복되므로, 문장과 run을 독립적으로 재표집하는 **2단계(교차) 부트스트랩**도 보수적 CI로 함께 냈다.
+- **CI**: run 1–5를 합친 정확도(n = 240)의 95% CI를 부트스트랩 10,000회로 구했다. 주 CI로 **문장×실행(40개 클러스터) 재표집**을 썼다. 같은 문장이 다섯 run에 반복되므로, 문장과 run을 독립적으로 재표집하는 **2단계(교차) 부트스트랩**도 보수적 CI로 함께 냈다.
 
 ### 2.3 실험 B: InJoon + D-psola
 
@@ -155,12 +155,27 @@ InJoon 중립의 평균 F0는 153.6 Hz였다(SunHi 233.6 Hz). 반음 단위 프�
 4. **화자 보존과 음질은 SunHi보다 좋았다**: k=1 화자 유사도 0.748(SunHi 0.662), 추정 MOS 3.49(SunHi 3.17–3.23). k=0.5에서는 0.864와 4.03으로, E3b의 권장 기준(화자 ≥ 0.60, MOS ≥ 4.0)을 함께 넘었다. 다만 그 점의 주 SER 정확도는 21.9%로, 우연 수준과 구별되지 않았다.
 5. 결론적으로 DP의 **화자 보존 성질은 남성 화자로 일반화됐다.** 반면 **SunHi에서 얻은 감정 인식 정확도는 튜닝 없이 일반화되지 않았다.** 화자별 기준(예: 중립 F0 대비 상대 목표)이나 화자별 dev 보정이 필요하다.
 
-## 5. 원고에 넣을 만한 문장(초안)
+## 5. 결과 파일 (`results/`)
 
-- "같은 프리셋으로 평가 문장을 5회 독립적으로 다시 합성했을 때 D의 SER 정확도는 평균 74.6%(SD 0.9, 범위 72.9–75.0%; 5회 합산 95% CI 70.8–78.3%)였고, D가 C보다 높다는 결과는 모든 실행에서 유지되었다(차이 +14.6 ~ +20.8%p, McNemar p ≤ 0.016)."
-- "D-psola 프리셋을 튜닝 없이 남성 화자에 적용하면 화자 임베딩 유사도(0.75)와 추정 MOS(3.49)는 여성 화자보다 높았지만, SER 정확도는 26.0%로 크게 낮아졌다. 이 SER은 남성 화자의 중립 음성을 '행복'으로 분류하는 편향을 보였고, 독립 SER에서는 화자 간 차이가 없었다(39.1% 대 38.8%)."
+- 실험 A: `per_file_a.csv`(파일별 원자료: SER 원 확률, 보조 SER, SQUIM, 화자 유사도, 음향 특징), `per_item_a_all_runs.csv`(run 0·0b 포함 문항 단위), `runs_a.csv`(표 1), `summary_across_runs_a.csv`(평균·SD·범위), `pooled_new5_a.csv`(표 2와 CI 3종), `item_stability_a.csv`, `paired_by_run_a.csv`, `recall_by_run_a.csv`, `recall_pooled_new5_a.csv`, `waveform_consistency_B_a.csv`, `summary_a.json`(77.1%·72.9%의 위치, 파형 일치도)
+- 실험 B: `per_file_b.csv`, `summary_b.csv`(표 3), `recall_b.csv`, `acoustic_by_emotion_b.csv`(표 5), `summary_b.json`
+- 공통: `model_check.csv`, `model_check.json`, `synth_log_a_*.json`, `synth_log_b_*.json`(요청 수·실패 수·시각), `synth_*.out`, `measure_*.log`
 
-## 6. 재현
+## 6. 실패 기록
+
+- 1차 시도(16:02): 당시 `.venv`의 edge-tts 7.2.8로 보낸 모든 요청이 403으로 실패했고, 합성된 파일은 없다(2.1절).
+- 2차 시도(16:04–16:09, edge-tts 7.3.1): run 1(56개 요청)은 실패 없이 끝났다. run 2의 `S02_surprise`(C) 요청은 당시 재시도 한도인 6회 연속으로 실패해 중단됐다. 이 시도의 실패 로그는 저장 전에 중단되어 남지 않았다(`results/synth_a_attempt2_aborted.out`). 실패는 최소 6건이다. 같은 요청을 직후에 단독으로 보냈을 때는 정상 응답이었다.
+- run 2의 일부 파일(9개)은 지우고, 3차 시도(16:13–16:14, 재시도 한도 10회)에서 run 2–5를 처음부터 다시 합성했다. 실패 0건, 요청 224개였다. 실험 B는 요청 16개, 실패 0건이었다.
+
+## 7. 한계
+
+E3·E3b의 한계(사람 평가 없음, 대리 지표, 문장 8개, SQUIM은 운율 자연성을 직접 재지 않음)가 그대로 적용된다. 사람 청취 평가는 후속으로 진행 예정이다. 덧붙여 다음이 있다.
+1. run 1–5는 같은 날 10분 안에, 같은 회선에서 합성했다. 며칠·몇 주 간격의 변동이나 Microsoft 서버 모델 갱신에 따른 변화는 포함하지 않는다. run 0(2026-10-12, edge-tts 7.2.8)과 run 1–5(7.3.1) 사이의 차이에는 시간 간격도 섞여 있다. 다만 두 버전의 요청 본문은 같다.
+2. 재합성 변동은 edge-tts에서만 생긴다. PSOLA 후처리와 측정 모델은 결정적이다(같은 음성을 다시 채점하면 같은 값이 나온다).
+3. 실험 B는 남성 화자 1명, 반복 2회다. 주 SER(emotion2vec)이 InJoon 중립을 '행복'으로 보는 편향이 있어, 정확도 하락 중 어느 정도가 운율 전달의 실패이고 어느 정도가 SER 편향인지 나눌 수 없다. 사람 청취 평가나 화자 적응된 SER이 필요하다.
+4. 실험 B의 화자 유사도 기준(InJoon 중립)은 SunHi 결과의 기준(SunHi 중립)과 다른 음성이다. 따라서 두 화자의 수치는 "각자 원음 대비"로만 비교된다.
+
+## 8. 재현
 
 ```bash
 cd face-emotion-tts/experiments/E3_emotional-speech/E3c_robustness
@@ -173,25 +188,5 @@ cd face-emotion-tts/experiments/E3_emotional-speech/E3c_robustness
 ../../../.venv/bin/python scripts/analyze_e3c.py b
 ```
 
-edge-tts 7.3.1은 `data/pylib_edge_tts_7.3.1/`에 있어야 한다(없으면 `.venv`의 edge-tts를 쓴다): `.venv/bin/pip install --no-deps --target data/pylib_edge_tts_7.3.1 edge-tts==7.3.1`.
+edge-tts는 7.3.1 이상이 필요하다. 측정 당시에는 `.venv`가 7.2.8이라 7.3.1을 `data/pylib_edge_tts_7.3.1/`에 따로 설치했다(`.venv/bin/pip install --no-deps --target data/pylib_edge_tts_7.3.1 edge-tts==7.3.1`). `synth_e3c.py`는 이 폴더가 있으면 앞에 두고, 없으면 `.venv`의 edge-tts를 쓴다. `.venv`가 7.3.1 이상이면 이 설치는 필요 없다.
 오디오 1,000개(184 MB)는 `data/E3c_audio/`(.gitignore 대상)에만 있다. 구성: `run<r>/{B,C,D,DP}/<문장ID>_<감정>.wav`, `injoon/rep<r>/{B,DP_k050,DP_k100}/`. 이 폴더에는 오디오를 복사하지 않았다.
-
-## 7. 결과 파일 (`results/`)
-
-- 실험 A: `per_file_a.csv`(파일별 원자료: SER 원 확률, 보조 SER, SQUIM, 화자 유사도, 음향 특징), `per_item_a_all_runs.csv`(run 0·0b 포함 문항 단위), `runs_a.csv`(표 1), `summary_across_runs_a.csv`(평균·SD·범위), `pooled_new5_a.csv`(표 2와 CI 3종), `item_stability_a.csv`, `paired_by_run_a.csv`, `recall_by_run_a.csv`, `recall_pooled_new5_a.csv`, `waveform_consistency_B_a.csv`, `summary_a.json`(77.1%·72.9%의 위치, 파형 일치도)
-- 실험 B: `per_file_b.csv`, `summary_b.csv`(표 3), `recall_b.csv`, `acoustic_by_emotion_b.csv`(표 5), `summary_b.json`
-- 공통: `model_check.csv`, `model_check.json`, `synth_log_a_*.json`, `synth_log_b_*.json`(요청 수·실패 수·시각), `synth_*.out`, `measure_*.log`
-
-## 8. 실패 기록
-
-- 1차 시도(16:02): `.venv`의 edge-tts 7.2.8로 보낸 모든 요청이 403으로 실패했고, 합성된 파일은 없다(2.1절).
-- 2차 시도(16:04–16:09, edge-tts 7.3.1): run 1(56개 요청)은 실패 없이 끝났다. run 2의 `S02_surprise`(C) 요청은 당시 재시도 한도인 6회 연속으로 실패해 중단됐다. 이 시도의 실패 로그는 저장 전에 중단되어 남지 않았다(`results/synth_a_attempt2_aborted.out`). 실패는 최소 6건이다. 같은 요청을 직후에 단독으로 보냈을 때는 정상 응답이었다.
-- run 2의 일부 파일(9개)은 지우고, 3차 시도(16:13–16:14, 재시도 한도 10회)에서 run 2–5를 처음부터 다시 합성했다. 실패 0건, 요청 224개였다. 실험 B는 요청 16개, 실패 0건이었다.
-
-## 9. 한계
-
-E3·E3b의 한계(사람 평가 없음, 대리 지표, 문장 8개, SQUIM은 운율 자연성을 직접 재지 않음)가 그대로 적용된다. 덧붙여 다음이 있다.
-1. run 1–5는 같은 날 10분 안에, 같은 회선에서 합성했다. 며칠·몇 주 간격의 변동이나 Microsoft 서버 모델 갱신에 따른 변화는 포함하지 않는다. run 0(2026-10-12, edge-tts 7.2.8)과 run 1–5(7.3.1) 사이의 차이에는 시간 간격도 섞여 있다. 다만 두 버전의 요청 본문은 같다.
-2. 재합성 변동은 edge-tts에서만 생긴다. PSOLA 후처리와 측정 모델은 결정적이다(같은 음성을 다시 채점하면 같은 값이 나온다).
-3. 실험 B는 남성 화자 1명, 반복 2회다. 주 SER(emotion2vec)이 InJoon 중립을 '행복'으로 보는 편향이 있어, 정확도 하락 중 어느 정도가 운율 전달의 실패이고 어느 정도가 SER 편향인지 나눌 수 없다. 사람 청취 평가나 화자 적응된 SER이 필요하다.
-4. 실험 B의 화자 유사도 기준(InJoon 중립)은 SunHi 결과의 기준(SunHi 중립)과 다른 음성이다. 따라서 두 화자의 수치는 "각자 원음 대비"로만 비교된다.
