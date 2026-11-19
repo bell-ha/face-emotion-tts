@@ -6,3 +6,6 @@ numpy>=1.24,<2
 requests>=2.31
 tensorflow-cpu==2.13.1 ; platform_system == "Windows"
 tensorflow==2.15.1 ; platform_system != "Windows"
+# 선택: --classifier hsemotion (HSEmotion ONNX). numpy를 올리지 않도록 함께 고정해 설치:
+#   pip install onnxruntime -c <(echo numpy==1.26.4)
+# onnxruntime>=1.17

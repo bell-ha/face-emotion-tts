@@ -6,6 +6,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tts"))
+sys.path.insert(0, str(ROOT / "face"))   # emotion_core (TensorFlow·카메라 없이 import 가능)
 
 # 테스트는 항상 키 없는 edge 백엔드로, E3 모듈은 끄고(네트워크·DSP 의존 제거) 돌린다.
 os.environ["TTS_BACKEND"] = "edge"
@@ -20,8 +21,15 @@ def appmod():
     return appmod
 
 
+def _reset(appmod):
+    appmod.EMO_HISTORY.clear()
+    appmod.PROB_HISTORY.clear()
+    appmod.PROB_STATE["classifier"] = None
+
+
 @pytest.fixture()
-def fresh(appmod):
-    appmod.EMO_HISTORY.clear()
+def fresh(appmod, monkeypatch):
+    monkeypatch.delenv("FACEVOX_W_NEUTRAL", raising=False)
+    _reset(appmod)
     yield appmod
-    appmod.EMO_HISTORY.clear()
+    _reset(appmod)

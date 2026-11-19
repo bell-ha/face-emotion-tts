@@ -1,6 +1,8 @@
 """STAGE TTS 서버 (Flask).
 
-- 얼굴 감정 이벤트 수신(/set_emotion), 문장 구간 지배 감정 계산(/emotion/resolve_one)
+- 얼굴 감정 이벤트 수신(/set_emotion: 라벨 전환, /set_emotion_probs: 0.2초 확률 요약)
+- 문장 구간 지배 감정 계산(/emotion/resolve_one): 확률 요약이 있으면 확률 질량 적분(E5),
+  없으면(구버전 클라이언트) 라벨 전환 이벤트의 지속 시간(졸업논문 방식)
 - 문장별 감정 태그(<행복> 등) 파싱 후 문장마다 감정 프리셋으로 합성하여 이어 붙임(/tts)
 - TTS 백엔드: OPENAI_API_KEY가 있으면 gpt-4o-mini-tts(+instructions), 없으면 edge (무료 온라인 TTS + 로컬 운율 후처리)
   (TTS_BACKEND=openai|edge|auto 로 강제 가능, backends.py 참고)
@@ -120,6 +122,64 @@ def _pick_dominant_ko(t0: int, t1: int, conf_thresh: float = 0.5, min_ratio: flo
     if emo == "중립" or (best_ms / total) < min_ratio:
         return ""
     return f"<{emo}>"
+
+# ─────────────── 확률 질량 문장 태깅 (E5, experiments/E5_improvements README 6.2) ───────────────
+# face_emotion.py → POST /set_emotion_probs 로 0.2초마다 들어오는 원시 확률 요약
+# 항목: (t0_ms, t1_ms, n_frames, labels, probs)  — 0.2 s × 3000 = 약 10분
+PROB_HISTORY = deque(maxlen=3000)
+KO6 = ["분노", "두려움", "행복", "슬픔", "놀람", "중립"]
+DEFAULT_LABELS = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+
+# 중립 억제 가중치(E5 dev 배우에서 고른 값). 분류기 이름은 클라이언트 요약 payload의 "classifier".
+W_NEUTRAL_BY_CLASSIFIER = {"cnn": 0.25, "hsemotion": 0.9}
+W_NEUTRAL_DEFAULT = W_NEUTRAL_BY_CLASSIFIER["cnn"]
+PROB_STATE = {"classifier": None}   # 마지막 요약의 분류기 이름
+
+
+def _w_neutral() -> float:
+    """환경변수 FACEVOX_W_NEUTRAL이 있으면 그 값, 없으면 마지막 요약의 분류기 이름으로 고른다(모르면 0.25)."""
+    env = os.getenv("FACEVOX_W_NEUTRAL", "").strip()
+    if env:
+        try:
+            return float(env)
+        except ValueError:
+            print(f"[warn] FACEVOX_W_NEUTRAL={env!r} 무시")
+    return W_NEUTRAL_BY_CLASSIFIER.get(PROB_STATE["classifier"], W_NEUTRAL_DEFAULT)
+
+
+def _mass_ko(t0: int, t1: int) -> dict:
+    """[t0,t1]과 겹치는 요약을 (겹친 비율 × 프레임 수)로 가중 합산한 6감정 확률 질량 (Disgust→분노)."""
+    m = dict.fromkeys(KO6, 0.0)
+    for a, b, n, labels, probs in PROB_HISTORY:
+        ov = min(b, t1) - max(a, t0)
+        if ov > 0 and b > a:
+            w = (ov / (b - a)) * n
+            for lab, v in zip(labels, probs):
+                m[LABEL_TO_KO[lab]] += w * v
+    return m
+
+
+def _pick_dominant_mass(t0: int, t1: int, w_neutral: float = None, r_min: float = 0.0) -> str:
+    """중립 질량에 w_neutral을 곱한 뒤 argmax. 중립이 이기거나 1위 비율이 r_min 미만이면 ""."""
+    if w_neutral is None:
+        w_neutral = _w_neutral()
+    m = _mass_ko(t0, t1)
+    total = sum(m.values())
+    if total <= 0:
+        return ""
+    m["중립"] *= w_neutral
+    emo = max(m, key=m.get)            # 동점이면 KO6 앞쪽 (np.argmax와 같음)
+    if emo == "중립" or m[emo] / sum(m.values()) < r_min:
+        return ""
+    return f"<{emo}>"
+
+
+def _pick_dominant(t0: int, t1: int) -> str:
+    """확률 요약이 들어온 적이 있으면 질량 방식, 아니면 졸업논문 방식으로 폴백."""
+    if PROB_HISTORY:
+        return _pick_dominant_mass(t0, t1)
+    # 필요시 더 자주 태그 나오도록 완화: conf_thresh=0.45, min_ratio=0.3
+    return _pick_dominant_ko(t0, t1, conf_thresh=0.5, min_ratio=0.4)
 
 # ───────────────────────────── 감정별 프리셋(여성 화자) ─────────────────────────────
 # 허용 음성: alloy, echo, fable, onyx, nova, shimmer, coral, verse, ballad, ash, sage
@@ -308,6 +368,23 @@ def set_emotion():
         print(f"[face] t={t} label={label} tag={tag} -> emo='{emo_ko}' conf={conf:.2f}")
     return jsonify({"status": "ok"})
 
+# 0.2초 확률 요약 수신: {"t0","t1","n","probs", "labels"(선택), "classifier"(선택)}
+@app.route("/set_emotion_probs", methods=["POST"])
+def set_emotion_probs():
+    data = request.get_json(silent=True) or {}
+    try:
+        t0, t1, n = int(data["t0"]), int(data["t1"]), int(data["n"])
+        probs = [float(v) for v in data["probs"]]
+        labels = [str(x) for x in (data.get("labels") or DEFAULT_LABELS)]
+        if len(labels) != len(probs) or n <= 0 or any(lab not in LABEL_TO_KO for lab in labels):
+            raise ValueError("bad summary")
+    except Exception:
+        return jsonify({"status": "error"}), 400
+    PROB_HISTORY.append((t0, t1, n, labels, probs))
+    if data.get("classifier"):
+        PROB_STATE["classifier"] = str(data["classifier"])
+    return jsonify({"status": "ok"})
+
 # 문장 구간 지배 감정 → 한국어 태그("<행복>") 반환
 @app.route("/emotion/resolve_one", methods=["POST"])
 def resolve_one():
@@ -319,8 +396,7 @@ def resolve_one():
         return jsonify({"tag": ""}), 400
     if until_ms <= since_ms:
         return jsonify({"tag": ""})
-    # 필요시 더 자주 태그 나오도록 완화: conf_thresh=0.45, min_ratio=0.3
-    tag = _pick_dominant_ko(since_ms, until_ms, conf_thresh=0.5, min_ratio=0.4)
+    tag = _pick_dominant(since_ms, until_ms)
     return jsonify({"tag": tag})
 
 # ── 디버그: 문장 파싱 및 적용 예정 파라미터 미리보기
@@ -447,7 +523,9 @@ def debug_backend():
     return jsonify({"backend": BACKEND.name, "mode": getattr(BACKEND, "mode", BACKEND.name),
                     "prosody_status": getattr(BACKEND, "prosody_status", None),
                     "rewrite": USE_REWRITE, "format": OUTPUT_FORMAT,
-                    "pydub": PydubAvailable, "ffmpeg": FFMPEG_OK})
+                    "pydub": PydubAvailable, "ffmpeg": FFMPEG_OK,
+                    "tagging": "mass" if PROB_HISTORY else "duration",
+                    "classifier": PROB_STATE["classifier"], "w_neutral": _w_neutral()})
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ Real-time facial expression-driven emotional TTS (MediaPipe + CNN + OpenAI TTS /
 ```
 face-emotion-tts/
 ├── app/
-│   ├── face/      # 표정 인식: MediaPipe 얼굴 검출 + CNN(FER2013, 7개 감정) + EMA/다수결/Hold-Time 안정화
+│   ├── face/      # 표정 인식: MediaPipe 얼굴 검출 + CNN(FER2013, 7개 감정; 선택 HSEmotion) + EMA/히스테리시스/Hold-Time 안정화
 │   ├── tts/       # Flask 서버 + 웹 UI: 감정 태깅, 합성(OpenAI 또는 edge-tts), 운율 후처리(prosody.py)
 │   └── tests/     # pytest
 ├── experiments/
@@ -46,8 +46,8 @@ face-emotion-tts/
 ## 파이프라인
 
 1. `app/face/face_emotion.py`가 웹캠(또는 영상 파일) 프레임에서 얼굴을 찾고 7개 감정을 분류
-2. 감정이 안정적으로 유지되면(EMA + 다수결 + Hold-time) `POST /set_emotion`으로 서버에 전송
-3. 웹 UI에서 문장 끝(`.` `!` `?`)을 입력하면, 그 문장을 쓰는 동안 가장 오래 유지된 감정 태그(`<행복>` 등)가 붙음(`/emotion/resolve_one`)
+2. 감정이 안정적으로 바뀌면(EMA + 히스테리시스 δ=0.5 + Hold-time) `POST /set_emotion`으로 서버에 전송(화면 표시용), 0.2초마다 원시 확률 평균을 `POST /set_emotion_probs`로 전송
+3. 웹 UI에서 문장 끝(`.` `!` `?`)을 입력하면, 그 문장 구간의 확률 질량(중립 억제 가중치 적용)이 가장 큰 감정 태그(`<행복>` 등)가 붙음(`/emotion/resolve_one`, 확률 요약이 없으면 가장 오래 유지된 감정). 근거: `experiments/E5_improvements`
 4. `POST /tts`가 문장마다 감정 프리셋을 적용해 합성하고, pydub으로 이어 붙임
 
 ## TTS 백엔드
@@ -97,7 +97,7 @@ python app\face\face_emotion.py
 ### 테스트
 
 ```bash
-python -m pytest app/tests -q     # 태그 파서, 지배 감정 선택, Flask 엔드포인트(합성은 mock)
+python -m pytest app/tests -q     # 태그 파서, 지배 감정 선택, Flask 엔드포인트(합성은 mock), E5 참조 구현과의 동등성
 ```
 
 ## 실험

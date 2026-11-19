@@ -1,13 +1,16 @@
-# face_emotion.py (label-only transitions to Orpheus)
-# - Sends emotion transitions to Flask server (/set_emotion) using LABEL ONLY
-# - Chooses the most stable label via EMA + majority + hold-time
-# - 'tag' is always "" (unused); app.py will map label -> Korean emotion
+# face_emotion.py (label transitions + probability summaries to the STAGE server)
+# - /set_emotion       : stable label transitions (UI display / fallback tagging), LABEL ONLY
+#                        EMA + hysteresis (E5) + hold-time; 'tag' is always "" (app.py maps label -> Korean)
+# - /set_emotion_probs : every 0.2 s, mean raw 7-class probabilities of that interval (sentence tagging, E5)
+# - Classifier: FER2013-CNN (face_emotion.h5, default) or HSEmotion ONNX (--classifier hsemotion)
+# Pure logic (stabilizer, summaries, HSEmotion pre/post-processing) lives in emotion_core.py.
 #
 # Usage:
 #   python face_emotion.py                      # webcam 0 (OS별 기본 백엔드 자동 선택)
 #   python face_emotion.py --camera 1           # 다른 카메라
 #   python face_emotion.py --video clip.mp4     # 웹캠 대신 영상 파일 (데모/테스트)
 #   python face_emotion.py --video clip.mp4 --realtime --headless --server http://127.0.0.1:5000
+#   python face_emotion.py --classifier hsemotion   # data/models/hsemotion/enet_b0_8_va_mtl.onnx 필요
 
 import argparse
 import os
@@ -16,9 +19,12 @@ import sys
 import time
 import cv2
 import numpy as np
-from collections import deque
 import mediapipe as mp
-from tensorflow.keras.models import load_model
+
+from emotion_core import CLASSIFIER_PRESETS, RULES, HSEmotionClassifier, ProbSummary, Stabilizer
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_HSE_ONNX = os.path.join(_HERE, "..", "..", "data", "models", "hsemotion", "enet_b0_8_va_mtl.onnx")
 
 # =========================
 # CLI
@@ -32,6 +38,13 @@ def parse_args(argv=None):
     ap.add_argument("--headless", action="store_true", help="no preview window (cv2.imshow off)")
     ap.add_argument("--server", type=str, default=None, help="Flask server URL (overrides discovery)")
     ap.add_argument("--no-send", action="store_true", help="do not POST to the server (local test)")
+    ap.add_argument("--classifier", choices=sorted(CLASSIFIER_PRESETS), default="cnn",
+                    help="cnn = FER2013 CNN (face_emotion.h5, default); hsemotion = HSEmotion ONNX")
+    ap.add_argument("--hse-model", type=str, default=DEFAULT_HSE_ONNX,
+                    help="HSEmotion ONNX path (default: data/models/hsemotion/enet_b0_8_va_mtl.onnx)")
+    ap.add_argument("--rule", choices=RULES, default=None,
+                    help="label rule (default per classifier: cnn=hyst, hsemotion=gate_hyst; thesis = original code)")
+    ap.add_argument("--delta", type=float, default=None, help="hysteresis delta (default 0.5)")
     return ap.parse_args(argv)
 
 ARGS = parse_args()
@@ -112,8 +125,12 @@ MIN_HOLD_MS = 100           # 같은 label이 이 시간 이상 유지될 때만
 MIN_SEND_INTERVAL = 0.2     # 연속 전송 최소 간격(sec)
 VERBOSE_LOG = True          # 전송/연결/디버그 로그
 
-# Emotion labels (model order)
-EMOTION_LABELS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+SUMMARY_SEC = 0.2           # 확률 요약 전송 주기(sec) = MIN_SEND_INTERVAL
+
+# Label rule (E5): CNN = hyst δ=0.5, HSEmotion = gate_hyst δ=0.5
+_preset = CLASSIFIER_PRESETS[ARGS.classifier]
+RULE = ARGS.rule or _preset["rule"]
+HYST_DELTA = _preset["delta"] if ARGS.delta is None else ARGS.delta
 
 # =========================
 # Utils
@@ -135,15 +152,28 @@ def preprocess_face(face_bgr):
     return arr
 
 # =========================
-# Load model
+# Load model → classify(face_bgr) returns (1, 7) probs in EMOTION_LABELS order
 # =========================
-_model_file = MODEL_PATH
-if not os.path.exists(_model_file):
-    # 다른 폴더에서 실행해도 스크립트 옆의 모델을 찾도록
-    _model_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), MODEL_PATH)
-if not os.path.exists(_model_file):
-    raise FileNotFoundError(f"모델 파일을 찾을 수 없습니다: {MODEL_PATH}")
-model = load_model(_model_file)
+if ARGS.classifier == "hsemotion":
+    if not os.path.exists(ARGS.hse_model):
+        sys.exit(f"HSEmotion ONNX 파일이 없습니다: {ARGS.hse_model} (experiments/E5_improvements/README.md 8절 참고)")
+    try:
+        classify = HSEmotionClassifier(ARGS.hse_model)
+    except ImportError:
+        sys.exit("HSEmotion에는 onnxruntime이 필요합니다: pip install onnxruntime")
+else:
+    from tensorflow.keras.models import load_model
+    _model_file = MODEL_PATH
+    if not os.path.exists(_model_file):
+        # 다른 폴더에서 실행해도 스크립트 옆의 모델을 찾도록
+        _model_file = os.path.join(_HERE, MODEL_PATH)
+    if not os.path.exists(_model_file):
+        raise FileNotFoundError(f"모델 파일을 찾을 수 없습니다: {MODEL_PATH}")
+    model = load_model(_model_file)
+
+    def classify(face_bgr):
+        # model.predict 대신 직접 호출 (E1: 프레임당 약 26 ms → 4 ms, 출력 동일)
+        return model(preprocess_face(face_bgr), training=False).numpy()
 
 # =========================
 # MediaPipe detect
@@ -183,45 +213,36 @@ else:
 # =========================
 # State
 # =========================
-prob_ema = None
-history = deque(maxlen=30)  # 30fps 기준 1s buffer, recent WIN_SEC만 사용
-fps_smooth = 0.0
-t_prev = time.time()
-
-# label-based transition state (tag 제거)
-stable_label = None
-stable_conf = 0.0
-stable_start_ms = None
-
-last_sent_label = None
-last_sent_time = 0.0
+stab = Stabilizer(rule=RULE, delta=HYST_DELTA, ema_alpha=EMA_ALPHA, win_sec=WIN_SEC,
+                  conf_threshold=CONF_THRESHOLD, min_hold_ms=MIN_HOLD_MS, min_send_interval=MIN_SEND_INTERVAL)
+summary = ProbSummary(period=SUMMARY_SEC, classifier=ARGS.classifier)
 
 if VERBOSE_LOG:
     print(f"[info] Orpheus server: {ORPHEUS_URL}")
     print(f"[info] Source: {'video ' + ARGS.video if ARGS.video else 'camera'}")
+    print(f"[info] Classifier: {ARGS.classifier}  rule: {RULE}  delta: {HYST_DELTA}")
     if not ARGS.headless:
         print("[info] Press 'e' to force-send current stable label, 'q' to quit.")
 
-def maybe_send_transition(label: str, conf: float, force=False):
-    """Send when stable label transition happens (or force=True)."""
-    global last_sent_label, last_sent_time
-    now = time.time()
-    if not force:
-        if (now - last_sent_time) < MIN_SEND_INTERVAL:
-            return
-        if label == last_sent_label:
-            return
+def send_transition(event):
+    """event = (t_ms, label, conf) from Stabilizer → POST /set_emotion."""
+    if event is None:
+        return
+    t_ms, label, conf = event
     payload = {
-        "t": int(now * 1000),   # epoch ms
+        "t": t_ms,              # epoch ms
         "label": label,         # e.g., "Happy"
         "tag": "",              # ← always empty (no <laugh>/<gasp> etc.)
         "confidence": float(conf)
     }
     post_json(f"{ORPHEUS_URL}/set_emotion", payload, timeout=0.3)
-    last_sent_label = label
-    last_sent_time = now
     if VERBOSE_LOG:
         print(f"[send] {payload}")
+
+def send_summary(payload):
+    """0.2 s probability summary → POST /set_emotion_probs (sentence tagging)."""
+    if payload is not None:
+        post_json(f"{ORPHEUS_URL}/set_emotion_probs", payload, timeout=0.3)
 
 while True:
     t_frame_start = time.time()
@@ -229,18 +250,13 @@ while True:
     if not ok:
         break
 
-    # FPS
-    t_now = time.time()
-    fps = 1.0 / max(1e-6, (t_now - t_prev))
-    t_prev = t_now
-    fps_smooth = fps_smooth * 0.9 + fps * 0.1
-
     # Detect
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = detector.process(rgb)
 
-    current_label = "no face"
-    current_conf = 0.0
+    probs = None                # (1, 7) raw probabilities of this frame, None = no face
+    none_label = "Neutral"      # no face → neutral candidate (never sent: conf 0)
+    box = None
 
     if results.detections:
         # pick largest face
@@ -260,75 +276,35 @@ while True:
 
         if roi is not None:
             x1, y1 = max(0, x), max(0, y)
-            x2, y2 = x1 + roi.shape[1], y1 + roi.shape[0]
-
-            # classify
-            inp = preprocess_face(roi)
-            probs = model.predict(inp, verbose=0)  # (1, C)
-
-            # smooth (EMA)
-            if prob_ema is None:
-                prob_ema = probs
-            else:
-                prob_ema = EMA_ALPHA * probs + (1.0 - EMA_ALPHA) * prob_ema
-
-            # majority(last WIN_SEC)
-            history.append(int(np.argmax(probs)))
-            window_len = max(1, int(WIN_SEC * max(1.0, fps_smooth)))
-            recent = list(history)[-window_len:]
-            if recent:
-                vals, counts = np.unique(recent, return_counts=True)
-                majority_idx = int(vals[np.argmax(counts)])
-            else:
-                majority_idx = int(np.argmax(prob_ema))
-
-            # final label (prefer agreement)
-            ema_label_idx = int(np.argmax(prob_ema))
-            final_idx = majority_idx if majority_idx == ema_label_idx else ema_label_idx
-            current_label = EMOTION_LABELS[final_idx]
-            current_conf = float(prob_ema[0, final_idx])
-
-            # draw bbox & label
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            disp = f"{current_label} ({current_conf:.2f})"
-            cv2.putText(frame, disp, (x1, max(20, y1 - 10)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-    else:
-        # no face → treat as neutral candidate (won't be sent unless stable & conf)
-        current_label = "Neutral"
-        current_conf = 0.0
+            box = (x1, y1, x1 + roi.shape[1], y1 + roi.shape[0])
+            probs = classify(roi)   # (1, 7)
+        else:
+            none_label = "no face"  # face too small to crop → never sent
 
     # =========================
-    # Label-based Transition stability
+    # Stabilization (EMA + label rule + hold-time + send interval) & probability summary
     # =========================
-    now_ms = int(time.time() * 1000)
-    candidate_label = current_label
-    candidate_conf = current_conf
+    t_now = time.time()
+    st = stab.step(t_now, probs, none_label=none_label)
+    send_transition(st["send"])
+    send_summary(summary.step(t_now, probs))
 
-    # update stable
-    if candidate_label == stable_label:
-        if stable_start_ms is None:
-            stable_start_ms = now_ms
-        if candidate_conf > stable_conf:
-            stable_conf = candidate_conf
-    else:
-        stable_label = candidate_label
-        stable_conf = candidate_conf
-        stable_start_ms = now_ms
-
-    held_ms = (now_ms - (stable_start_ms or now_ms))
-    if held_ms >= MIN_HOLD_MS and stable_conf >= CONF_THRESHOLD and stable_label not in (None, "no face"):
-        # stable enough → maybe send
-        maybe_send_transition(stable_label, stable_conf)
+    if box is not None:
+        # draw bbox & label
+        x1, y1, x2, y2 = box
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        disp = f"{st['label']} ({st['conf']:.2f})"
+        cv2.putText(frame, disp, (x1, max(20, y1 - 10)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
     # =========================
     # HUD (debug)
     # =========================
     H, W = frame.shape[:2]
     cv2.rectangle(frame, (0, 0), (W, 50), (0, 0, 0), -1)
-    cv2.putText(frame, f"FPS: {fps_smooth:.1f}", (10, 20),
+    cv2.putText(frame, f"FPS: {stab.fps_smooth:.1f}  [{ARGS.classifier}/{RULE}]", (10, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 255, 200), 2)
-    hud2 = f"Stable: {stable_label or 'None'}  conf:{stable_conf:.2f}  held:{held_ms}ms"
+    hud2 = f"Stable: {stab.stable_label or 'None'}  conf:{stab.stable_conf:.2f}  held:{stab.held_ms}ms"
     cv2.putText(frame, hud2, (10, 44),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 255), 2)
 
@@ -348,8 +324,8 @@ while True:
         break
     elif key == ord('e'):
         # force send current stable state for quick end-to-end testing
-        label_to_send = stable_label or current_label
-        maybe_send_transition(label_to_send, max(stable_conf, 0.0), force=True)
+        label_to_send = stab.stable_label or st["label"]
+        send_transition(stab.maybe_send(label_to_send, max(stab.stable_conf, 0.0), time.time(), force=True))
 
 cap.release()
 if not ARGS.headless:
