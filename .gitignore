@@ -15,12 +15,11 @@ app/tts/tts_temp.*
 .DS_Store
 ~$*
 
-# 논문 폴더: 최종 PDF 두 개와 안내만 공개하고, 원본(docx, 학번 등 메타데이터)·학교 및 학회 양식·검토 메모·서식 도구는 올리지 않는다
+# 논문 폴더: 학사학위논문 최종 PDF와 안내만 공개하고(학술지 원고는 투고·심사 중이라 비공개), 원본(docx, 학번 등 메타데이터)·학교 및 학회 양식·검토 메모·서식 도구는 올리지 않는다
 paper/1_thesis/*
 !paper/1_thesis/thesis_final_2025-11-06.pdf
 paper/templates/
 paper/2_journal-koen/*
-!paper/2_journal-koen/STAGE_KOEN_v06.pdf
 
 # 인수인계 메모 (읽은 뒤 삭제)
 HANDOFF.md
