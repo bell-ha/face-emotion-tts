@@ -77,6 +77,10 @@ def main():
             page.wait_for_selector("#result a", timeout=120000)
             page.wait_for_timeout(800)
             page.screenshot(path=str(FIG / f"web_ui{SUFFIX}.png"), full_page=True)
+            # 원고 그림 2: 전체 캡처에서 편집기·표정 패널 윗부분만 자른다(전체 화면은 정사각형이라 글씨가 작아짐)
+            if LANG == "en":
+                from PIL import Image
+                Image.open(FIG / "web_ui.png").crop((150, 150, 2750, 1745)).save(FIG / "web_ui_crop.png")
             # 왼쪽 편집 영역만(본문용 확대 그림)
             page.locator("main > section").screenshot(path=str(FIG / f"web_ui_editor{SUFFIX}.png"))
             page.locator("main > aside").screenshot(path=str(FIG / f"web_ui_face_panel{SUFFIX}.png"))

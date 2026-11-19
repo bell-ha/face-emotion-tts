@@ -50,16 +50,16 @@ h1 = 0.62
 # ── 윗줄: 표정 인식 클라이언트
 b1 = box(1.55, Y1, 0.58, h1, "Webcam\n(or video file)", C_FACE)
 b2 = box(2.36, Y1, 0.86, h1, "MediaPipe\nface detection", C_FACE)
-b3 = box(3.32, Y1, 0.88, h1, "CNN classifier\n(FER2013,\n7 classes)", C_FACE)
-b4 = box(4.31, Y1, 0.92, h1, "Temporal\nstabilization\n(EMA + majority\n+ hold-time)", C_FACE)
+b3 = box(3.32, Y1, 0.88, h1, "CNN classifier\n(FER2013)\nor HSEmotion", C_FACE)
+b4 = box(4.31, Y1, 0.92, h1, "Temporal\nstabilization\n(EMA + hysteresis\n+ hold-time)", C_FACE)
 for a, b in [(b1, b2), (b2, b3), (b3, b4)]:
     arrow(a[2], Y1, b[0], Y1)
 # ── 오른쪽 열: 서버 → 편집기
 XR, WR = 5.76, 0.94
-b5 = box(XR, Y1, WR, h1, "Event buffer\n(label, confidence,\ntimestamp)", C_SRV)
+b5 = box(XR, Y1, WR, h1, "Event buffer\n(labels and\nprob. summaries)", C_SRV)
 arrow(b4[2], Y1, b5[0], Y1)
-label((b4[2] + b5[0]) / 2, Y1 + h1 / 2 + 0.16, "HTTP POST\n/set_emotion", fs=FS_S)
-b6 = box(XR, Y2, WR, 0.54, "Sentence-level\ndominant emotion\n(longest-held span)", C_SRV)
+label((b4[2] + b5[0]) / 2, Y1 + h1 / 2 + 0.16, "HTTP POST\n/set_emotion(_probs)", fs=FS_S)
+b6 = box(XR, Y2, WR, 0.54, "Sentence-level tag\n(probability mass,\nneutral-weighted)", C_SRV)
 arrow(XR, b5[1], XR, b6[3])
 label(XR - WR / 2 - 0.06, (b5[1] + b6[3]) / 2, "span of the sentence being typed\n(since, until) at . ! ?", ha="right", fs=FS_S)
 b7 = box(XR, Y3, WR, 0.66, "Web editor\nemotion tag\n<Happy> inserted", C_WEB, bold_first=True)

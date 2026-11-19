@@ -126,7 +126,7 @@
   <section>
     <div class="card">
       <h2><span class="n">1</span><span data-i18n="h1">대본 쓰기 · 표정으로 연출</span></h2>
-      <p class="hint" data-i18n="hint1">카메라 앞에서 장면의 감정을 표정으로 지으며 대본을 쓰세요. 문장 끝에 <b>.</b> <b>!</b> <b>?</b> 를 입력하면, 그 문장을 쓰는 동안 가장 오래 유지된 표정이 연출 태그(<span class="chip c-행복">행복</span> 등)로 붙습니다. 표정이 뚜렷하지 않으면 기본 감정이 들어가고, 태그는 직접 고칠 수도 있습니다.</p>
+      <p class="hint" data-i18n="hint1">카메라 앞에서 장면의 감정을 표정으로 지으며 대본을 쓰세요. 문장 끝에 <b>.</b> <b>!</b> <b>?</b> 를 입력하면, 그 문장을 쓰는 동안 가장 뚜렷하게 나타난 표정이 연출 태그(<span class="chip c-행복">행복</span> 등)로 붙습니다. 표정이 뚜렷하지 않으면 기본 감정이 들어가고, 태그는 직접 고칠 수도 있습니다.</p>
       <div class="row" style="margin-bottom:12px">
         <label class="switch"><input type="checkbox" id="useFace" checked><span class="tr"></span><span data-i18n="useFace">얼굴 감정 사용</span></label>
         <button class="btn" id="btnStart"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
@@ -220,7 +220,7 @@ const I18N_EN = {
   brandSub: "Your facial expression while writing becomes per-sentence emotion direction · audiobooks · streaming · narration",
   srvChecking: "Checking server…",
   h1: "Write the script · direct with your face",
-  hint1: 'Write your script while acting out each scene\'s emotion in front of the camera. When you type <b>.</b> <b>!</b> <b>?</b> at the end of a sentence, the expression held longest while writing it is attached as an emotion tag (e.g. <span class="chip c-행복">Happy</span>). If no clear expression is found, the default emotion is used; tags can also be edited by hand.',
+  hint1: 'Write your script while acting out each scene\'s emotion in front of the camera. When you type <b>.</b> <b>!</b> <b>?</b> at the end of a sentence, the most prominent expression while writing it is attached as an emotion tag (e.g. <span class="chip c-행복">Happy</span>). If no clear expression is found, the default emotion is used; tags can also be edited by hand.',
   useFace: "Use facial emotion",
   h2: "Direction preview",
   hint2: "Each sentence is colored by the emotion it will be spoken with. A last sentence without a tag uses the default emotion.",
