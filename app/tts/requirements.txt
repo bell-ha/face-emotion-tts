@@ -5,7 +5,7 @@ pydub>=0.25.1          # 문장별 오디오 병합 (MP3 출력에는 ffmpeg 필
 requests>=2.31
 
 # edge 백엔드(키 불필요): 무료 온라인 TTS(edge-tts) + 로컬 운율 후처리(E3 prosody.py)
-edge-tts>=7.0          # Microsoft 온라인 음성 서비스 사용 → 인터넷 연결 필요
+edge-tts>=7.3.1        # Microsoft 온라인 음성 서비스 사용 → 인터넷 연결 필요. 7.2.8 은 2026-11 부터 인증 실패(403)
 numpy>=1.24
 scipy>=1.10
 soundfile>=0.12
