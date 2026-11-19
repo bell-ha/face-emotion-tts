@@ -1,0 +1,43 @@
+{
+ "D_position": {
+  "E3_run0_77.1": {
+   "value": 0.7708333333333334,
+   "n_new_runs_below": 5,
+   "n_new_runs_equal": 0,
+   "n_new_runs_above": 0,
+   "z_vs_new5": 2.683281572999745
+  },
+  "E3b_run0b_72.9": {
+   "value": 0.7291666666666666,
+   "n_new_runs_below": 0,
+   "n_new_runs_equal": 1,
+   "n_new_runs_above": 4,
+   "z_vs_new5": -1.788854381999834
+  }
+ },
+ "D_new5_acc9": [
+  0.7291666666666666,
+  0.75,
+  0.75,
+  0.75,
+  0.75
+ ],
+ "waveform_B_vs_run0": {
+  "corr_min": 0.9979816735606127,
+  "corr_max": 0.9995289095815355,
+  "resid_db_min": -30.259478251250698,
+  "resid_db_max": -23.934290684059157,
+  "resid_db_median": -27.16635936936781,
+  "n_len_diff_nonzero": 0,
+  "n": 40
+ },
+ "waveform_B_between_new_runs": {
+  "corr_min": 0.997187482558459,
+  "corr_max": 0.9995509589173616,
+  "resid_db_min": -30.461139415287025,
+  "resid_db_max": -22.500358593770585,
+  "resid_db_median": -27.359498445177522,
+  "n_identical": 0,
+  "n": 80
+ }
+}

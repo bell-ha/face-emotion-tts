@@ -1,0 +1,50 @@
+{
+ "status": "ok",
+ "experiment": "a",
+ "started": "2026-11-19T16:13:11",
+ "finished": "2026-11-19T16:14:38",
+ "edge_tts_version": "7.3.1",
+ "voice": "ko-KR-SunHiNeural",
+ "edge_requests_total_incl_retries": 224,
+ "failures": 0,
+ "blocks": [
+  {
+   "block": "run1",
+   "edge_requests_planned": 56,
+   "edge_start": "2026-11-19T16:13:11",
+   "edge_end": "2026-11-19T16:13:11",
+   "failures_in_block": 0
+  },
+  {
+   "block": "run2",
+   "edge_requests_planned": 56,
+   "edge_start": "2026-11-19T16:13:16",
+   "edge_end": "2026-11-19T16:13:26",
+   "failures_in_block": 0
+  },
+  {
+   "block": "run3",
+   "edge_requests_planned": 56,
+   "edge_start": "2026-11-19T16:13:37",
+   "edge_end": "2026-11-19T16:13:46",
+   "failures_in_block": 0
+  },
+  {
+   "block": "run4",
+   "edge_requests_planned": 56,
+   "edge_start": "2026-11-19T16:13:57",
+   "edge_end": "2026-11-19T16:14:07",
+   "failures_in_block": 0
+  },
+  {
+   "block": "run5",
+   "edge_requests_planned": 56,
+   "edge_start": "2026-11-19T16:14:18",
+   "edge_end": "2026-11-19T16:14:27",
+   "failures_in_block": 0
+  }
+ ],
+ "errors": [],
+ "seed": 42,
+ "note": "edge-tts는 Microsoft 온라인 서비스(인터넷 필요). PSOLA 후처리는 결정적(기식 잡음 시드 42)."
+}

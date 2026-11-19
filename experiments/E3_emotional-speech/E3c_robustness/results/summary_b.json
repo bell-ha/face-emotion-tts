@@ -1,0 +1,33 @@
+{
+ "rep_agreement": {
+  "DP_k050": {
+   "pred_agreement": 0.9166666666666666,
+   "correct_changed": 3
+  },
+  "DP_k100": {
+   "pred_agreement": 0.9791666666666666,
+   "correct_changed": 1
+  }
+ },
+ "InJoon_neutral_f0_mean_hz": 153.56932654439777,
+ "InJoon_neutral_f0_sd_hz": 5.943617665924352,
+ "SunHi_neutral_f0_mean_hz_test": 233.60567175496544,
+ "SunHi_DP_recall_E3b": {
+  "0.5": {
+   "happy": 1,
+   "sad": 0,
+   "angry": 6,
+   "surprise": 6,
+   "fear": 0,
+   "neutral": 5
+  },
+  "1.0": {
+   "happy": 1,
+   "sad": 6,
+   "angry": 8,
+   "surprise": 8,
+   "fear": 0,
+   "neutral": 5
+  }
+ }
+}

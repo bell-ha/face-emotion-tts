@@ -1,0 +1,184 @@
+backend: {'backend': 'edge', 'classifier': None, 'ffmpeg': True, 'format': 'mp3', 'mode': 'edge+prosody(E3,D)', 'prosody_status': 'ok', 'pydub': True, 'rewrite': False, 'tagging': 'duration', 'w_neutral': 0.25}
+cold first /tts: 2075 ms status 200
+fast stages done {'emo_history_size': 2000, 'tagging_before_probs': 'duration', 'tagging_after_probs': 'mass', 'w_neutral': 0.25, 'classifier': 'cnn', 'prob_history_size': 3000}
+syn short  rep00    1125 ms net=  1014 dsp=   33 att=1
+syn medium rep00    1168 ms net=  1021 dsp=   66 att=1
+syn long   rep00    1234 ms net=  1003 dsp=  135 att=1
+syn short  rep01     769 ms net=   639 dsp=   51 att=1
+syn medium rep01    1262 ms net=  1068 dsp=  108 att=1
+syn long   rep01    1950 ms net=  1624 dsp=  215 att=1
+syn short  rep02    1338 ms net=  1238 dsp=   28 att=1
+syn medium rep02     993 ms net=   856 dsp=   60 att=1
+syn long   rep02    1017 ms net=   830 dsp=  101 att=1
+syn short  rep03     860 ms net=   760 dsp=   26 att=1
+syn medium rep03    1039 ms net=   908 dsp=   52 att=1
+syn long   rep03    1137 ms net=   939 dsp=  108 att=1
+syn short  rep04     726 ms net=   618 dsp=   35 att=1
+syn medium rep04    1354 ms net=  1219 dsp=   59 att=1
+syn long   rep04    1755 ms net=  1528 dsp=  130 att=1
+syn short  rep05     703 ms net=   599 dsp=   28 att=1
+syn medium rep05     979 ms net=   826 dsp=   71 att=1
+syn long   rep05    1148 ms net=   932 dsp=  122 att=1
+syn short  rep06     705 ms net=   595 dsp=   33 att=1
+syn medium rep06     719 ms net=   566 dsp=   67 att=1
+syn long   rep06    1089 ms net=   861 dsp=  133 att=1
+syn short  rep07     727 ms net=   596 dsp=   55 att=1
+syn medium rep07    1007 ms net=   819 dsp=  100 att=1
+syn long   rep07    1567 ms net=  1248 dsp=  207 att=1
+syn short  rep08     890 ms net=   786 dsp=   28 att=1
+syn medium rep08     815 ms net=   680 dsp=   55 att=1
+syn long   rep08    1016 ms net=   831 dsp=  100 att=1
+syn short  rep09     771 ms net=   668 dsp=   30 att=1
+syn medium rep09     718 ms net=   592 dsp=   48 att=1
+syn long   rep09    1301 ms net=  1109 dsp=  104 att=1
+syn short  rep10     942 ms net=   833 dsp=   35 att=1
+syn medium rep10     888 ms net=   752 dsp=   59 att=1
+syn long   rep10     994 ms net=   776 dsp=  130 att=1
+syn short  rep11    1022 ms net=   917 dsp=   28 att=1
+syn medium rep11    1066 ms net=   910 dsp=   73 att=1
+syn long   rep11     995 ms net=   777 dsp=  123 att=1
+syn short  rep12     715 ms net=   608 dsp=   32 att=1
+syn medium rep12     917 ms net=   768 dsp=   67 att=1
+syn long   rep12    1105 ms net=   869 dsp=  138 att=1
+syn short  rep13     944 ms net=   821 dsp=   46 att=1
+syn medium rep13    1015 ms net=   829 dsp=   98 att=1
+syn long   rep13    1213 ms net=   892 dsp=  211 att=1
+syn short  rep14     899 ms net=   800 dsp=   27 att=1
+syn medium rep14     970 ms net=   833 dsp=   59 att=1
+syn long   rep14    1046 ms net=   856 dsp=  103 att=1
+syn short  rep15     709 ms net=   606 dsp=   29 att=1
+syn medium rep15     982 ms net=   849 dsp=   52 att=1
+syn long   rep15    1021 ms net=   829 dsp=  103 att=1
+syn short  rep16     835 ms net=   726 dsp=   34 att=1
+syn medium rep16     857 ms net=   719 dsp=   60 att=1
+syn long   rep16    2667 ms net=  2444 dsp=  128 att=1
+syn short  rep17     781 ms net=   670 dsp=   34 att=1
+syn medium rep17     722 ms net=   568 dsp=   71 att=1
+syn long   rep17     997 ms net=   780 dsp=  124 att=1
+syn short  rep18     851 ms net=   737 dsp=   40 att=1
+syn medium rep18    1183 ms net=  1023 dsp=   70 att=1
+syn long   rep18     962 ms net=   722 dsp=  141 att=1
+syn short  rep19     990 ms net=   850 dsp=   50 att=1
+syn medium rep19     863 ms net=   666 dsp=  109 att=1
+syn long   rep19    1113 ms net=   790 dsp=  209 att=1
+syn short  rep20     595 ms net=   492 dsp=   23 att=1
+syn medium rep20     648 ms net=   515 dsp=   55 att=1
+syn long   rep20     819 ms net=   631 dsp=  103 att=1
+syn short  rep21     543 ms net=   440 dsp=   28 att=1
+syn medium rep21    1004 ms net=   866 dsp=   59 att=1
+syn long   rep21     975 ms net=   787 dsp=   98 att=1
+syn short  rep22     694 ms net=   587 dsp=   35 att=1
+syn medium rep22     768 ms net=   622 dsp=   66 att=1
+syn long   rep22    1104 ms net=   848 dsp=  162 att=1
+syn short  rep23     806 ms net=   691 dsp=   33 att=1
+syn medium rep23     795 ms net=   611 dsp=   96 att=1
+syn long   rep23    1027 ms net=   750 dsp=  164 att=1
+syn short  rep24     811 ms net=   699 dsp=   35 att=1
+syn medium rep24     894 ms net=   748 dsp=   61 att=1
+syn long   rep24     979 ms net=   713 dsp=  161 att=1
+syn short  rep25     853 ms net=   697 dsp=   57 att=1
+syn medium rep25     783 ms net=   585 dsp=  103 att=1
+syn long   rep25    1125 ms net=   791 dsp=  215 att=1
+syn short  rep26     551 ms net=   452 dsp=   23 att=1
+syn medium rep26     754 ms net=   618 dsp=   53 att=1
+syn long   rep26     791 ms net=   595 dsp=  101 att=1
+syn short  rep27     564 ms net=   461 dsp=   25 att=1
+syn medium rep27     725 ms net=   591 dsp=   50 att=1
+syn long   rep27    1045 ms net=   822 dsp=  103 att=1
+syn short  rep28     600 ms net=   488 dsp=   35 att=1
+syn medium rep28     744 ms net=   600 dsp=   65 att=1
+syn long   rep28     860 ms net=   608 dsp=  160 att=1
+syn short  rep29     655 ms net=   548 dsp=   29 att=1
+syn medium rep29     854 ms net=   699 dsp=   68 att=1
+syn long   rep29     812 ms net=   573 dsp=  139 att=1
+multi n=1 rep00     636 ms audio=4.714 att=1
+multi n=3 rep00    1963 ms audio=15.121 att=1
+multi n=5 rep00    3491 ms audio=22.221 att=1
+multi n=1 rep01     841 ms audio=6.994 att=1
+multi n=3 rep01    1987 ms audio=14.113 att=1
+multi n=5 rep01    3272 ms audio=22.481 att=1
+multi n=1 rep02     770 ms audio=3.414 att=1
+multi n=3 rep02    1909 ms audio=10.513 att=1
+multi n=5 rep02    3737 ms audio=20.201 att=1
+multi n=1 rep03     645 ms audio=3.706 att=1
+multi n=3 rep03    1953 ms audio=12.074 att=1
+multi n=5 rep03    3472 ms audio=23.782 att=1
+multi n=1 rep04     753 ms audio=3.394 att=1
+multi n=3 rep04    2480 ms audio=13.082 att=1
+multi n=5 rep04    4038 ms audio=23.489 att=1
+multi n=1 rep05     813 ms audio=4.974 att=1
+multi n=3 rep05    2250 ms audio=16.682 att=1
+multi n=5 rep05    3240 ms audio=23.801 att=1
+multi n=1 rep06     764 ms audio=4.714 att=1
+multi n=3 rep06    2144 ms audio=15.121 att=1
+multi n=5 rep06    3458 ms audio=22.221 att=1
+multi n=1 rep07     815 ms audio=6.994 att=1
+multi n=3 rep07    2450 ms audio=14.113 att=1
+multi n=5 rep07    3192 ms audio=22.481 att=1
+multi n=1 rep08     756 ms audio=3.414 att=1
+multi n=3 rep08    1878 ms audio=10.513 att=1
+multi n=5 rep08    3400 ms audio=20.201 att=1
+multi n=1 rep09     701 ms audio=3.706 att=1
+multi n=3 rep09    1928 ms audio=12.074 att=1
+multi n=5 rep09    3287 ms audio=23.782 att=1
+multi n=1 rep10     736 ms audio=3.394 att=1
+multi n=3 rep10    2064 ms audio=13.082 att=1
+multi n=5 rep10    3169 ms audio=23.489 att=1
+multi n=1 rep11     630 ms audio=4.974 att=1
+multi n=3 rep11    2100 ms audio=16.682 att=1
+multi n=5 rep11    3155 ms audio=23.801 att=1
+multi n=1 rep12     701 ms audio=4.714 att=1
+multi n=3 rep12    2193 ms audio=15.121 att=1
+multi n=5 rep12    3195 ms audio=22.221 att=1
+multi n=1 rep13     733 ms audio=6.994 att=1
+multi n=3 rep13    2112 ms audio=14.113 att=1
+multi n=5 rep13    3257 ms audio=22.481 att=1
+multi n=1 rep14     737 ms audio=3.414 att=1
+multi n=3 rep14    1894 ms audio=10.513 att=1
+multi n=5 rep14    3115 ms audio=20.201 att=1
+multi n=1 rep15     713 ms audio=3.706 att=1
+multi n=3 rep15    1975 ms audio=12.074 att=1
+multi n=5 rep15    3682 ms audio=23.782 att=1
+multi n=1 rep16     733 ms audio=3.394 att=1
+multi n=3 rep16    1955 ms audio=13.082 att=1
+multi n=5 rep16    3236 ms audio=23.489 att=1
+multi n=1 rep17     705 ms audio=4.974 att=1
+multi n=3 rep17    2200 ms audio=16.682 att=1
+multi n=5 rep17    3450 ms audio=23.801 att=1
+multi n=1 rep18     670 ms audio=4.714 att=1
+multi n=3 rep18    2005 ms audio=15.121 att=1
+multi n=5 rep18    3240 ms audio=22.221 att=1
+multi n=1 rep19     847 ms audio=6.994 att=1
+multi n=3 rep19    1997 ms audio=14.113 att=1
+multi n=5 rep19    3554 ms audio=22.481 att=1
+multi n=1 rep20     630 ms audio=3.414 att=1
+multi n=3 rep20    1841 ms audio=10.513 att=1
+multi n=5 rep20    3256 ms audio=20.201 att=1
+multi n=1 rep21     726 ms audio=3.706 att=1
+multi n=3 rep21    1977 ms audio=12.074 att=1
+multi n=5 rep21    3415 ms audio=23.782 att=1
+multi n=1 rep22     691 ms audio=3.394 att=1
+multi n=3 rep22    1938 ms audio=13.082 att=1
+multi n=5 rep22    4711 ms audio=23.489 att=1
+multi n=1 rep23     660 ms audio=4.974 att=1
+multi n=3 rep23    1985 ms audio=16.682 att=1
+multi n=5 rep23    3066 ms audio=23.801 att=1
+multi n=1 rep24     590 ms audio=4.714 att=1
+multi n=3 rep24    2176 ms audio=15.121 att=1
+multi n=5 rep24    3497 ms audio=22.221 att=1
+multi n=1 rep25     848 ms audio=6.994 att=1
+multi n=3 rep25    1986 ms audio=14.113 att=1
+multi n=5 rep25    3297 ms audio=22.481 att=1
+multi n=1 rep26     638 ms audio=3.414 att=1
+multi n=3 rep26    1820 ms audio=10.513 att=1
+multi n=5 rep26    3398 ms audio=20.201 att=1
+multi n=1 rep27     733 ms audio=3.706 att=1
+multi n=3 rep27    1933 ms audio=12.074 att=1
+multi n=5 rep27    3352 ms audio=23.782 att=1
+multi n=1 rep28     686 ms audio=3.394 att=1
+multi n=3 rep28    2110 ms audio=13.082 att=1
+multi n=5 rep28    3296 ms audio=23.489 att=1
+multi n=1 rep29     733 ms audio=4.974 att=1
+multi n=3 rep29    1971 ms audio=16.682 att=1
+multi n=5 rep29    3938 ms audio=23.801 att=1
+saved. {'tts_retries': 0, 'fast_non200': 0}

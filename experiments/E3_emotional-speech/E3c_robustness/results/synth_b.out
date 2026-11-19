@@ -1,0 +1,30 @@
+injoon rep1: edge 2026-11-19T16:32:21 → 2026-11-19T16:32:25, failures 0
+injoon rep2: edge 2026-11-19T16:32:35 → 2026-11-19T16:32:37, failures 0
+{
+ "status": "ok",
+ "experiment": "b",
+ "started": "2026-11-19T16:32:21",
+ "finished": "2026-11-19T16:32:48",
+ "edge_tts_version": "7.3.1",
+ "voice": "ko-KR-InJoonNeural",
+ "edge_requests_total_incl_retries": 16,
+ "failures": 0,
+ "blocks": [
+  {
+   "block": "injoon_rep1",
+   "edge_requests_planned": 8,
+   "edge_start": "2026-11-19T16:32:21",
+   "edge_end": "2026-11-19T16:32:25",
+   "failures_in_block": 0
+  },
+  {
+   "block": "injoon_rep2",
+   "edge_requests_planned": 8,
+   "edge_start": "2026-11-19T16:32:35",
+   "edge_end": "2026-11-19T16:32:37",
+   "failures_in_block": 0
+  }
+ ],
+ "seed": 42,
+ "note": "edge-tts는 Microsoft 온라인 서비스(인터넷 필요). PSOLA 후처리는 결정적(기식 잡음 시드 42)."
+}

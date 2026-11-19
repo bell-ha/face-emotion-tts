@@ -1,0 +1,8 @@
+{
+ "n_files": 152,
+ "e2v_pred_agree": 1.0,
+ "w2v_pred_agree": 1.0,
+ "mos_max_abs_diff": 4.440892098500626e-16,
+ "e2v_mismatch": [],
+ "w2v_mismatch_n": 0
+}

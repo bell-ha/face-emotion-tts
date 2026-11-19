@@ -1,0 +1,47 @@
+{
+  "network_share_single": {
+    "short": 0.8553656609352726,
+    "medium": 0.829433057969797,
+    "long": 0.7854121602827314
+  },
+  "network_share_single_dp": {
+    "short": 0.8410879779472328,
+    "medium": 0.7928438224285173,
+    "long": 0.751396540848481
+  },
+  "network_share_multi": {
+    "1": 0.7874699481575543,
+    "3": 0.841489324546547,
+    "5": 0.855430453215717
+  },
+  "resolve_mass_tag_counts": {
+    "<분노>": 300
+  },
+  "resolve_duration_tag_counts": {
+    "(none)": 201,
+    "<분노>": 99
+  },
+  "retries": {
+    "D": {
+      "tts_retries": 0,
+      "fast_non200": 0
+    },
+    "Dp": {
+      "tts_retries": 0,
+      "fast_non200": 0
+    }
+  },
+  "attempts_gt1": {
+    "single": 0,
+    "multi": 0,
+    "dp": 0
+  },
+  "cold_start_ms": {
+    "D": 2075.231208000332,
+    "Dp": 1892.9002910008421
+  },
+  "cold_decode_ms": {
+    "D": 1163.2514580123825,
+    "Dp": 1160.0472919963067
+  }
+}
